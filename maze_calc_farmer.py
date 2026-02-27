@@ -57,10 +57,27 @@ for size in range(1, get_world_size() + 1):
 	fn = create_a_star_test(size, max_runs)
 	tests.append(('astar', size, fn))
 
+highest_settings = tests[0]
+highest_rate = 0
 for (test_name, test_size, test) in tests:
 	start_time()
 	start_treasure()
 	test()
 	time = end_time()
 	treasure = end_treasure()
-	quick_print(test_name, test_size, '; time:', time, 's; treasure:', treasure, '; treasure/s:', treasure/time, 't/s')
+	treasure_rate = treasure / time
+	quick_print(test_name, test_size, '; time:', time, 's; treasure:', treasure, '; gold/s:', treasure_rate, 'g/s')
+	if treasure_rate > highest_rate:
+		highest_rate = treasure_rate
+		highest_settings = (test_name, test_size, test)
+
+test_name, test_size, test = highest_settings
+quick_print('USING', test_name, test_size)
+while True:
+	start_time()
+	start_treasure()
+	test()
+	time = end_time()
+	treasure = end_treasure()
+	treasure_rate = treasure / time	
+	quick_print(test_name, test_size, '; time:', time, 's; treasure:', treasure, '; gold/s:', treasure_rate, 'g/s')
