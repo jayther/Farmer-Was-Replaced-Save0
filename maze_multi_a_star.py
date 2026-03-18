@@ -69,74 +69,73 @@ def get_neighbor_dir(node, neighbor):
 def get_point(node):
 	return (node['x'], node['y'])
 
-def create_run(col_start, col_end):
+def create_run(col_start, col_end, max_gold = -1):
 	maze_size = col_end - col_start + 1
+	child = False
+	start_gold = num_items(Items.Gold)
+	starting_point = (0, 0)
+	
+	def need_more_gold():
+		if max_gold == -1:
+			return True
+		return num_items(Items.Gold) - start_gold < max_gold
+	
 	def setup():
+		global starting_point
 		common.go_to_pos(col_start, 0)
+		
+		if num_drones() == 1:
+			# full setup
+			drone_points = []
+			
+			# find most square rectangle dimensions with whole numbers
+			most_square_dims = (1, maze_size)
+			most_square_dim_diff = abs(maze_size - 1)
+			for i in range(1, maze_size / 2 + 1):
+				if (maze_size % i) == 0:
+					w = maze_size / i
+					h = i
+					dim_diff = abs(w - h)
+					if dim_diff < most_square_dim_diff:
+						most_square_dims = (w, h)
+						most_square_dim_diff = dim_diff
+						
+			w, h = most_square_dims
+			
+			for i in range(0, maze_size, w):
+				x = i + w / 2
+				for j in range(0, maze_size, h):
+					y = j + h / 2
+					starting_point = (x, y)
+					if num_drones() < max_drones():
+						spawn_drone(child_run)
+		
+		common.go_to_pos(starting_point[0], starting_point[1])
+		
+		# TODO wait for other drones to be in position
+		common.wait(0.5)
+		
+		plant(Entities.Bush)
+		substance = maze_size * 2**(num_unlocked(Unlocks.Mazes) - 1)
+		use_item(Items.Weird_Substance, substance)
+		
+	def repeat_setup():
 		plant(Entities.Bush)
 		substance = maze_size * 2**(num_unlocked(Unlocks.Mazes) - 1)
 		use_item(Items.Weird_Substance, substance)
 	
-	def find_path(start_node, end_node, node_map):
-		ended = False
-		next_nodes = [start_node]
-		visited_nodes = set()
-		explored_nodes = set()
-		end_coords = get_point(end_node)
+	def child_run():
+		global child
+		child = True
 		
-		while not ended and len(next_nodes) > 0:
-			node = next_nodes.pop()
-			coords = get_point(node)
+		while need_more_gold():
+			waiting = True
+			common.go_to_pos(starting_point[0], starting_point[1])
 			
-			if coords == end_coords:
-				ended = True
-				break
-			
-			visited_nodes.add(coords)
-			explored_nodes.add(coords)
-			
-			neighbors = get_neighbors(node)
-			def applicable_neighbors(item, arr):
-				return get_point(item) not in visited_nodes
-				
-			a_neighbors = common.filter(neighbors, applicable_neighbors)
-			if len(a_neighbors) == 0:
-				continue
-			
-			for n in a_neighbors:
-				n['path_parent'] = node
-				n_coords = get_point(n)
-				explored_nodes.add(n_coords)
-				assign_eph_score(n, end_node)
-				next_nodes.append(n)
-			
-			common.sort_by_fn(next_nodes, sort_eph_score_fn)
-		
-		if not ended:
-			# no path found
-			return None
-		
-		# create path of directions
-		reversed_path = []
-		cur = end_node
-		cur_coords = get_point(cur)
-		start_coords = get_point(start_node)
-		while cur_coords != start_coords:
-			parent = cur['path_parent']
-			# purposely doing the other way because it's reversed
-			reversed_path.append(get_neighbor_dir(parent, cur))
-			cur = parent
-			cur_coords = get_point(cur)
-		path = common.reverse(reversed_path)
-		
-		# reset eph scores
-		for c in explored_nodes:
-			n = node_map[c]
-			n['eph_score'] = -1
-			n['path_parent'] = None
-		
-		return path
-
+			while waiting:
+				if get_entity_type() != Entities.Grass:
+					waiting = False
+			find_treasure()
 
 	def find_treasure():
 		cur = create_node(get_pos_x(), get_pos_y())
@@ -147,12 +146,19 @@ def create_run(col_start, col_end):
 		}
 		path = [cur]
 		treasure_coords = measure()
+
+		# workaround for racing condition
+		if treasure_coords == None:
+			return
 		
 		while len(path) > 0:
 			node = path[len(path) - 1]
 			
 			if get_entity_type() == Entities.Treasure:
 				harvest()
+				break
+			
+			if get_entity_type() == Entities.Grass:
 				break
 			
 			coords = (get_pos_x(), get_pos_y())
@@ -216,18 +222,31 @@ def create_run(col_start, col_end):
 				
 		# harvesting nothing will clear the maze
 		harvest()
+	
+	def repeat_run():
+		first_run = True
+		while need_more_gold():
+			common.go_to_pos(starting_point[0], starting_point[1])
+			common.wait(0.25)
+			if first_run:
+				first_run = False
+			elif need_more_gold():
+				repeat_setup()
+			find_treasure()
 		
 	def end():
 		common.go_to_pos(col_end, 0)
 	
 	def run():
 		setup()
-		find_treasure()
+		repeat_run()
 		end()
 		
 	return run
 	
 if __name__ == '__main__':
+	clear()
 	runner = create_run(0, 31)
 	while True:
 		runner()
+	

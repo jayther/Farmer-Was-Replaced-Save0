@@ -1,0 +1,1 @@
+leaderboard_run(Leaderboards.Cactus_Single, "cactus_single_lb", 1000)

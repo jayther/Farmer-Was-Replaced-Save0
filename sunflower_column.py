@@ -8,39 +8,77 @@ min_petals = 7
 min_suns = 10
 dedicated_sun_farmer = False
 perma_ignore = None
+max_gold = -1
+start_gold = num_items(Items.Gold)
+multi = False
+
+def need_more_gold():
+	if max_gold == -1:
+		return True
+	return num_items(Items.Gold) - start_gold < max_gold
 
 def plant_sunflower():
 	plant(Entities.Sunflower)
 	common.maybe_water()
 	
-def setup(col_start, col_end):
+def use_hat():
+	pass
+	#if num_unlocked(Hats.Golden_Sunflower_Hat) > 0:
+	#	change_hat(Hats.Golden_Sunflower_Hat)
+	
+def setup(col_start, col_end, max_gold_arg = -1, multi_arg = False):
 	global sun_col_start
 	global sun_col_end
+	global perma_ignore
+	global max_gold
+	global start_gold
+	global sun_map
+	global multi
+	
+	max_gold = max_gold_arg
+	start_gold = num_items(Items.Gold)
+	
 	sun_col_start = col_start
 	sun_col_end = col_end
+	perma_ignore = None
 	orig_x = get_pos_x()
 	orig_y = get_pos_y()
 	drones = []
+	sun_map = {}
+	multi = multi_arg
 	
 	# plant
 	common.go_to_pos(sun_col_start, 0)
 	for x in range(sun_col_start, sun_col_end):
-		drones.append(spawn_drone(plant_column))
+		if multi:
+			drones.append(spawn_drone(plant_column))
+		else:
+			plant_column()
 		move(East)
 	plant_column()
 	
-	# measure
+	# measure for ignorable flowers
+	ignore = set()
 	common.go_to_pos(sun_col_start, 0)
 	for x in range(sun_col_start, sun_col_end + 1):
 		for y in range(get_world_size()):
 			petals = measure()
-			sun_map[(x,y)] = petals
+			if petals == None:
+				continue
+			if petals <= min_petals:
+				ignore.add((x, y))
+			if len(ignore) >= min_suns:
+				perma_ignore = ignore
+				break
+			sun_map[(x, y)] = petals
 			move(North)
+		if perma_ignore != None:
+			break
 		move(East)
 	common.go_to_pos(orig_x, orig_y)
 
 def plant_column():
-	change_hat(Hats.Golden_Sunflower_Hat)
+	use_hat()
 	for i in range(get_world_size()):
 		if get_ground_type() != Grounds.Soil:
 			till()
@@ -58,6 +96,8 @@ def harvest_column(petals, ignore):
 		count = measure()
 		if petals == count:
 			harvest()
+		if not need_more_gold():
+			break
 		move(North)
 
 def run():
@@ -102,32 +142,42 @@ def run():
 	# keep harvesting from max to min
 	for petals in range(max_petals, min_petals - 1, -1):			
 		def create_harvest_column():
-			change_hat(Hats.Golden_Sunflower_Hat)
+			use_hat()
 			harvest_column(petals, ignore)
 		
 		common.go_to_pos(sun_col_start, 0)
 		drones = []
 		for x in range(sun_col_start, sun_col_end):
-			drones.append(spawn_drone(create_harvest_column))
+			if multi:
+				drones.append(spawn_drone(create_harvest_column))
+			else:
+				create_harvest_column()
 			move(East)
 		harvest_column(petals, ignore)
 		
 		for drone in drones:
 			wait_for(drone)
+		
+		if not need_more_gold():
+			break
 	
 	# replant
-	drones = []
-	common.go_to_pos(sun_col_start, 0)
-	for col in range(num_cols - 1):
-		drones.append(spawn_drone(plant_column))
-		move(East)
-	plant_column()
-	
-	for drone in drones:
-		wait_for(drone)
+	if need_more_gold():
+		drones = []
+		common.go_to_pos(sun_col_start, 0)
+		for col in range(num_cols - 1):
+			if multi:
+				drones.append(spawn_drone(plant_column))
+			else:
+				plant_column()
+			move(East)
+		plant_column()
+		
+		for drone in drones:
+			wait_for(drone)
 	
 	# remeasure
-	if not perma_ignore:
+	if need_more_gold() and not perma_ignore:
 		common.go_to_pos(sun_col_start, 0)
 		for x in range(num_cols):
 			for y in range(get_world_size()):
@@ -135,6 +185,12 @@ def run():
 				sun_map[(x,y)] = petals
 				move(North)
 			move(East)
+
+def create_run_lb(col_start, col_end, max_power = 1000):
+	def runner():
+		setup(col_start, col_end, max_power)
+		run()
+	return runner
 
 def check_get_power(force = False, min_power = 2, is_dedicated = False):
 	global dedicated_sun_farmer
@@ -149,7 +205,7 @@ def check_get_power(force = False, min_power = 2, is_dedicated = False):
 	common.go_to_pos(orig_x, orig_y)
 
 def wait_until_grown_column():
-	change_hat(Hats.Golden_Sunflower_Hat)
+	use_hat()
 	x = get_pos_x()
 	baby_suns = set()
 	for y in range(get_world_size()):
@@ -187,15 +243,27 @@ def wait_until_grown():
 	
 	common.go_to_pos(orig_x, orig_y)
 
-def create_dedicated_runner(col_start, col_end):
+def create_dedicated_runner(col_start, col_end, max_gold_arg = -1):
 	global dedicated_sun_farmer
 	dedicated_sun_farmer = True
 	
 	def dedicated_runner():
-		change_hat(Hats.Golden_Sunflower_Hat)
-		setup(col_start, col_end)
+		#change_hat(Hats.Golden_Sunflower_Hat)
+		setup(col_start, col_end, max_gold_arg)
 		while True:
 			wait_until_grown()
 			check_get_power(True, 2, True)
 			
 	return dedicated_runner
+	
+def create_leaderboard_runner():
+	global dedicated_sun_farmer
+	dedicated_sun_farmer = True
+	
+	def runner():
+		setup(0, 31, 100000)
+		while num_items(Items.Power) < 100000:
+			wait_until_grown()
+			check_get_power(True, 2, True)
+			
+	return runner

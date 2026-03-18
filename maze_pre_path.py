@@ -136,33 +136,27 @@ def create_run(col_start, col_end):
 			n['path_parent'] = None
 		
 		return path
-
-
+		
 	def find_treasure():
 		cur = create_node(get_pos_x(), get_pos_y())
+		next_nodes = [cur]
 		visited_nodes = set()
-		spent_nodes = set()
 		node_map = {
 			(cur['x'], cur['y']): cur
 		}
-		path = [cur]
-		treasure_coords = measure()
 		
-		while len(path) > 0:
-			node = path[len(path) - 1]
+		while len(next_nodes) > 0:
+			node = next_nodes.pop()
+			if not is_in_node(node):
+				path = find_path(node_map[(get_pos_x(), get_pos_y())], node, node_map)
+				for p in path:
+					move(p)
 			
 			if get_entity_type() == Entities.Treasure:
 				harvest()
 				break
 			
 			coords = (get_pos_x(), get_pos_y())
-			
-			if coords in spent_nodes:
-				path.pop()
-				if node['path_parent'] != None:
-					move(node['path_parent'])
-				continue
-			
 			visited_nodes.add(coords)
 			
 			neighbors = []
@@ -171,16 +165,12 @@ def create_run(col_start, col_end):
 					continue
 				delta = dir_delta_map[dir]
 				if node[dir] != None:
-					neighbor = node_map[node[dir]]
+					neighbor = node[dir]
 				else:
 					neighbor = create_node(node['x'] + delta[0], node['y'] + delta[1])
-					neighbor_coords = get_point(neighbor)
-					score = common.dist_sq(neighbor_coords, treasure_coords)
-					node[dir] = neighbor_coords
-					neighbor[opp_dir_map[dir]] = coords
-					neighbor['path_parent'] = opp_dir_map[dir]
-					neighbor['score'] = score
-					node_map[neighbor_coords] = neighbor
+					node[dir] = neighbor
+					neighbor[opp_dir_map[dir]] = node
+					node_map[get_point(neighbor)] = neighbor
 				neighbors.append(neighbor)
 			
 			def applicable_neighbors(item, _):
@@ -188,31 +178,15 @@ def create_run(col_start, col_end):
 			
 			a_neighbors = common.filter(neighbors, applicable_neighbors)
 			
-			a_neighbors_len = len(a_neighbors)
-			if a_neighbors_len == 0:
-				spent_nodes.add(coords)
-				path.pop()
-				if node['path_parent'] != None:
-					move(node['path_parent'])
+			if len(a_neighbors) == 0:
 				continue
+				
+			for n in a_neighbors:
+				next_nodes.append(n)
 			
-			if a_neighbors_len == 1:
-				last_neighbor = a_neighbors[0]
-				last_neighbor_dir = get_neighbor_dir(node, last_neighbor)
-				move(last_neighbor_dir)
-				path.append(last_neighbor)
-				spent_nodes.add(coords)
-				continue
-			
-			# lowest score
-			lowest_neighbor = a_neighbors[0]
-			for neighbor in a_neighbors:
-				if neighbor['score'] < lowest_neighbor['score']:
-					lowest_neighbor = neighbor
-			
-			lowest_neighbor_dir = get_neighbor_dir(node, lowest_neighbor)
-			move(lowest_neighbor_dir)
-			path.append(lowest_neighbor)
+			last_neighbor = a_neighbors[len(a_neighbors) - 1]
+			last_neighbor_dir = get_neighbor_dir(node, last_neighbor)
+			move(last_neighbor_dir)
 				
 		# harvesting nothing will clear the maze
 		harvest()

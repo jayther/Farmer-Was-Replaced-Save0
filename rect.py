@@ -15,6 +15,12 @@ def is_in_rect(rect, point):
 		point[1] >= rect[0][1] and
 		point[1] <= rect[1][1]
 	)
+	
+def rect_in_rect(big, small):
+	return (
+		is_in_rect(big, small[0]) and
+		is_in_rect(big, small[1])
+	)
 
 def grow_rect(rect, amount):
 	return create_from_bounds(

@@ -1,5 +1,5 @@
-def maybe_water():
-	if get_water() < 0.5:
+def maybe_water(min_water = 0.5):
+	if get_water() < min_water:
 		use_item(Items.Water)
 
 
@@ -102,6 +102,9 @@ def filter(arr, fn):
 			new_arr.append(item)
 	return new_arr
 
+def rand_item(arr):
+	return arr[random() * len(arr)]
+
 def reverse(arr):
 	new_arr = []
 	for i in range(len(arr) - 1, -1, -1):
@@ -110,3 +113,45 @@ def reverse(arr):
 
 def dist_sq(a, b):
 	return (b[0] - a[0])**2 + (b[1] - a[1])**2
+	
+def floor(num):
+	return num // 1
+
+def ceil(num):
+	return floor(num) + 1
+
+def round(num):
+	if (num % 1) < 0.5:
+		return floor(num)
+	return ceil(num)
+	
+def wait(seconds):
+	time = get_time()
+	while get_time() - time < seconds:
+		pass
+		
+def wait_ticks(ticks):
+	start_ticks = get_tick_count()
+	while get_tick_count() - start_ticks < ticks:
+		pass
+
+def wait_for_all_drones():
+	while num_drones() > 1:
+		pass
+		
+def is_in(item, arr):
+	for i in arr:
+		if i == item:
+			return True
+	return False
+
+def wait_for_drones(drones):
+	results = []
+	for drone in drones:
+		results.append(wait_for(drone))
+	return results
+	
+def wait_for_item(item_type, min_items = 1):
+	while num_items(item_type) < min_items:
+		pass
+	

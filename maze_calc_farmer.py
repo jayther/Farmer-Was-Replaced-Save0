@@ -1,6 +1,8 @@
 import column_farmer
 import maze_section
 import maze_section_a_star
+import maze_multi_dfs
+import maze_fill
 import common
 
 clear()
@@ -45,17 +47,43 @@ def create_a_star_test(size, runs):
 			common.go_to_pos(0,0)
 	return a_star_test
 
+def create_multi_dfs_test(size, runs):
+	col_start = 0
+	col_end = size - 1
+	runner = maze_multi_dfs.create_run(col_start, col_end)
+	def multi_dfs_test():
+		for _ in range(runs):
+			runner()
+	return multi_dfs_test
+
+def create_fill_test(size, runs):
+	col_start = 0
+	col_end = size - 1
+	runner = maze_fill.create_run(col_start, col_end)
+	def fill_test():
+		for _ in range(runs):
+			runner()
+	return fill_test
+
 tests = []
 
-for size in range(1, get_world_size() + 1):
-	fn = create_maze_section_test(size, max_runs)
-	tests.append(('wallhug', size, fn))
+#for size in range(1, get_world_size() + 1):
+#	fn = create_maze_section_test(size, max_runs)
+#	tests.append(('wallhug', size, fn))
 
 #tests.append(('wallhug', 32, create_maze_section_test(32)))
 
-for size in range(1, get_world_size() + 1):
-	fn = create_a_star_test(size, max_runs)
-	tests.append(('astar', size, fn))
+#for size in range(1, get_world_size() + 1):
+#	fn = create_a_star_test(size, max_runs)
+#	tests.append(('astar', size, fn))
+
+#for size in range(1, get_world_size() + 1):
+#	fn = create_multi_dfs_test(size, max_runs)
+#	tests.append(('multi', size, fn))
+
+for size in range(1, 6):
+	fn = create_fill_test(size, max_runs)
+	tests.append(('fill', size, fn))
 
 highest_settings = tests[0]
 highest_rate = 0

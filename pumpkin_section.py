@@ -4,15 +4,21 @@ import tracker
 
 start_track, end_track = tracker.create_tracker([Items.Pumpkin])
 
-first_run = True
-first_harvest = True
-
-deads = set()
-new_plants = True
+def use_hat():
+	pass
+	#if num_unlocked(Hats.Pumpkin_Hat) > 0:
+	#	change_hat(Hats.Pumpkin_Hat)
 
 def create_run(col_start, col_end, multi = False):
+
+	first_run = True
+	first_harvest = True
+	
+	deads = set()
+	new_plants = True
+	
 	def harvest_column():
-		change_hat(Hats.Pumpkin_Hat)
+		use_hat()
 		for j in range(get_world_size()):
 			if common.should_harvest():
 				harvest()
@@ -37,10 +43,8 @@ def create_run(col_start, col_end, multi = False):
 				wait_for(drone)
 		else:
 			for i in range(col_start, col_end + 1):
-				harvest_column()				
-				sunflower_column.check_get_power()
-				if i != col_end:
-					move(East)
+				harvest_column()
+				move(East)
 	
 	def maybe_replace():
 		replaced = False
@@ -80,9 +84,7 @@ def create_run(col_start, col_end, multi = False):
 			has_dead = True # dont try to harvest in the 2nd run
 			for i in range(col_start, col_end + 1):
 				maybe_replace_column()
-				sunflower_column.check_get_power()
-				if i != col_end:
-					move(East)
+				move(East)
 						
 		elif new_plants:
 			# new plants from past harvest, so check everything
@@ -95,9 +97,7 @@ def create_run(col_start, col_end, multi = False):
 						deads.add((i, j))
 					move(North)
 				
-				sunflower_column.check_get_power()
-				if i != col_end:
-					move(East)
+				move(East)
 		else:
 			# tracked the dead pumpkins in the last pass, so only check those
 			not_dead = set()
@@ -119,7 +119,7 @@ def create_run(col_start, col_end, multi = False):
 		return has_dead
 		
 	def check_and_replace_multi_column():
-		change_hat(Hats.Pumpkin_Hat)
+		use_hat()
 		dead_indexes = set()
 		first = True
 		first_plants = True
@@ -172,10 +172,20 @@ def create_run(col_start, col_end, multi = False):
 		if not has_dead:
 			common.go_to_pos(col_start, 0)
 			normal_harvest()
-			if not first_harvest:
-				end_track()
-			else:
-				first_harvest = False
-			start_track()
 			
 	return run
+
+if __name__ == '__main__':
+	clear()
+	set_world_size(10)
+	goal = 1000000
+	step_size = 100000
+	goal_start = num_items(Items.Pumpkin)
+	
+	while num_items(Items.Pumpkin) - goal_start < goal:
+		quick_print('new runner')
+		runner = create_run(0, 9, True)
+		step_start = num_items(Items.Pumpkin)
+		while num_items(Items.Pumpkin) - step_start < step_size:
+			quick_print('same runner')
+			runner()

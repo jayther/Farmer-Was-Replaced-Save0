@@ -3,6 +3,11 @@ import sunflower_column
 
 first_run = True
 
+def use_hat():
+	pass
+	#if num_unlocked(Hats.Cactus_Hat) > 0:
+	#	change_hat(Hats.Cactus_Hat)
+
 def create_run(start_col, end_col, multi = False):
 	
 	def plant_cactus():
@@ -13,7 +18,7 @@ def create_run(start_col, end_col, multi = False):
 		common.maybe_water()
 	
 	def plant_cactus_column():
-		change_hat(Hats.Cactus_Hat)
+		use_hat()
 		for _ in range(get_world_size()):
 			plant_cactus()
 			move(North)
@@ -47,7 +52,6 @@ def create_run(start_col, end_col, multi = False):
 						swap(North)
 					move(North)
 				common.go_to_pos(col, 0)
-				sunflower_column.check_get_power()
 			move(East)
 		
 		row_size = end_col - start_col + 1
@@ -63,7 +67,6 @@ def create_run(start_col, end_col, multi = False):
 						swap(East)
 					move(East)
 				common.go_to_pos(start_col, row)
-				sunflower_column.check_get_power()
 			move(North)
 			
 		# all should be sorted, harvest here
@@ -72,7 +75,7 @@ def create_run(start_col, end_col, multi = False):
 		common.go_to_pos(end_col, 0)
 	
 	def sort_column():
-		change_hat(Hats.Cactus_Hat)
+		use_hat()
 		col_size = get_world_size()
 		col = get_pos_x()
 		
@@ -84,10 +87,9 @@ def create_run(start_col, end_col, multi = False):
 					swap(North)
 				move(North)
 			common.go_to_pos(col, 0)
-			sunflower_column.check_get_power()
 	
 	def sort_row(row_start, row_end):
-		change_hat(Hats.Cactus_Hat)
+		use_hat()
 		row_size = end_col - start_col + 1
 		common.go_to_pos(start_col, row_start)
 		for row in range(row_start, row_end + 1):
@@ -99,7 +101,6 @@ def create_run(start_col, end_col, multi = False):
 						swap(East)
 					move(East)
 				common.go_to_pos(start_col, row)
-				sunflower_column.check_get_power()
 			if row < row_end:
 				move(North)
 	
@@ -170,13 +171,14 @@ def create_run(start_col, end_col, multi = False):
 			sort_and_harvest_single()
 	
 	def run():
-		global first_run
-		if not first_run:
-			sort_and_harvest()
-		else:
-			first_run = False
 		setup()
+		sort_and_harvest()
 	
 	return run
 
 	
+if __name__ == '__main__':
+	clear()
+	set_world_size(10)
+	runner = create_run(0, 9, False)
+	runner()

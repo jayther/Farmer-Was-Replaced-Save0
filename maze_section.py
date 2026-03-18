@@ -40,3 +40,8 @@ def create_run(col_start, col_end):
 		find_treasure()
 		end()
 	return run
+	
+if __name__ == '__main__':
+	runner = create_run(0, 31)
+	while True:
+		runner()
