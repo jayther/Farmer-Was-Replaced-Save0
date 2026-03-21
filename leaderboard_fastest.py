@@ -16,8 +16,8 @@ def print_readable(seconds):
 	quick_print(hours, ':', minutes, ':', rem_seconds)
 
 
-duration = simulate(filename, unlocks, items, globals, seed, speedup)
-#duration = leaderboard_run(Leaderboards.Fastest_Reset, filename, 1000)
+#duration = simulate(filename, unlocks, items, globals, seed, speedup)
+duration = leaderboard_run(Leaderboards.Fastest_Reset, filename, 1000)
 
 if duration != None:
 	quick_print('Finished in', duration, 's')

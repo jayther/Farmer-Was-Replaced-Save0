@@ -10,6 +10,7 @@ import weird_multi_section
 import sunflower_column
 import dumbflower_section
 import cactus_section
+import cactus_brick_lb
 import maze_reuse_section
 import dinosaur_section
 import maze_multi_reuse
@@ -70,7 +71,10 @@ def create_farmer(item, item_count):
 			return weird_section.create_run(0, size - 1)
 	elif item == Items.Cactus:
 		clear()
-		return cactus_section.create_run(0, size - 1, multi)
+		if multi:
+			return cactus_brick_lb.create_run(item_count - num_items(Items.Cactus))
+		else:
+			return cactus_section.create_run(0, size - 1, multi)
 	elif item == Items.Gold:
 		# calculate maze size based on max drones
 		if m_drones == 1:
@@ -173,28 +177,28 @@ while num_unlocked(Unlocks.Leaderboard) == 0:
 			#start_tick = get_tick_count()
 			#start_items = num_items(item)
 			
-			if item in calc_actual_costs.item_entity_map:
-				area = world_size ** 2
-				entity = calc_actual_costs.item_entity_map[item]
-				if entity != None:
-					proj_unlock_type = calc_actual_costs.entity_unlock_map[entity]
-					area_yield = 2 ** (num_unlocked(proj_unlock_type) - 1) * area
-					if entity == Entities.Cactus:
-						area_yield *= area ** 2
-					elif entity == Entities.Pumpkin:
-						pumpkin_mul = min(world_size, 6)
-						area_yield = area * pumpkin_mul * 0.6 * 2 ** (num_unlocked(proj_unlock_type) - 1)
-					elif entity == Entities.Bush:
-						area_yield *= 3
-					quick_print(item, 'expected iters:', (cost - num_items(item)) / area_yield)
+			#if item in calc_actual_costs.item_entity_map:
+			#	area = world_size ** 2
+			#	entity = calc_actual_costs.item_entity_map[item]
+			#	if entity != None:
+			#		proj_unlock_type = calc_actual_costs.entity_unlock_map[entity]
+			#		area_yield = 2 ** (num_unlocked(proj_unlock_type) - 1) * area
+			#		if entity == Entities.Cactus:
+			#			area_yield *= area ** 2
+			#		elif entity == Entities.Pumpkin:
+			#			pumpkin_mul = min(world_size, 6)
+			#			area_yield = area * pumpkin_mul * 0.6 * 2 ** (num_unlocked(proj_unlock_type) - 1)
+			#		elif entity == Entities.Bush:
+			#			area_yield *= 3
+			#		quick_print(item, 'expected iters:', (cost - num_items(item)) / area_yield)
 			
-			iters = 0
+			#iters = 0
 			while num_items(item) < cost:
 				# run farm
 				farmer()
-				iters += 1
+			#	iters += 1
 				
-			quick_print(item, 'actual iters:', iters)
+			#quick_print(item, 'actual iters:', iters)
 			
 			# d_tick = get_tick_count() - start_tick
 			# d_items = num_items(item) - start_items

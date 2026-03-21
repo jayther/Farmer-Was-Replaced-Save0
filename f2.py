@@ -1,6 +1,7 @@
 unlocks = {
-	Unlocks.Pumpkins: 1,
+	Unlocks.Pumpkins: 2,
 	Unlocks.Carrots: 2,
+	Unlocks.Cactus: 2,
 	Unlocks.Expand: 3
 }
 items = {}

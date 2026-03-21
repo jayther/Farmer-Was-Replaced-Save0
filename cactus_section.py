@@ -14,28 +14,40 @@ def create_run(start_col, end_col, multi = False):
 		if get_ground_type() != Grounds.Soil:
 			harvest()
 			till()
-		plant(Entities.Cactus)
+		planted = plant(Entities.Cactus)
+		if not planted:
+			quick_print('CACTUS NOT PLANTED')
 		common.maybe_water()
+		return planted
 	
 	def plant_cactus_column():
 		use_hat()
 		for _ in range(get_world_size()):
-			plant_cactus()
+			planted = plant_cactus()
+			if not planted:
+				return False
 			move(North)
+		return True
 	
 	def setup():
 		common.go_to_pos(start_col, 0)
+		success = True
 		if multi:
 			drones = []
 			for i in range(start_col, end_col):
 				drones.append(spawn_drone(plant_cactus_column))
 				move(East)
-			plant_cactus_column()
+			success = success and plant_cactus_column()
+			for drone in drones:
+				success = success and wait_for(drone)
 		else:
 			for i in range(start_col, end_col + 1):
-				plant_cactus_column()
+				success = success and plant_cactus_column()
+				if not success:
+					break
 				if i != end_col:
 					move(East)
+		return success
 	
 	def sort_and_harvest_single():
 		common.go_to_pos(start_col, 0)
@@ -171,7 +183,11 @@ def create_run(start_col, end_col, multi = False):
 			sort_and_harvest_single()
 	
 	def run():
-		setup()
+		success = setup()
+		if not success:
+			quick_print('cactus_section.setup failed')
+			while True:
+				pass
 		sort_and_harvest()
 	
 	return run

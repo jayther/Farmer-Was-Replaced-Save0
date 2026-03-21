@@ -14,6 +14,7 @@ def create_basic_plant_lb(plant_type, goal_count, multi = False):
 	warned_no_plant = False
 	tilled = plant_type not in non_tilled_types
 	item_type = get_item_from_entity(plant_type)
+	warn_count = 0
 	
 	if item_type == None:
 		quick_print('WARNING:', plant_type, 'does not map to an item type')
@@ -23,6 +24,7 @@ def create_basic_plant_lb(plant_type, goal_count, multi = False):
 	
 	def plant_plant(x, y):
 		global warned_no_plant
+		global warn_count
 		if tilled and get_ground_type() != Grounds.Soil:
 			till()
 		if plant_type == Entities.Tree:
@@ -32,6 +34,10 @@ def create_basic_plant_lb(plant_type, goal_count, multi = False):
 			if not planted and not warned_no_plant:
 				quick_print('NOT PLANTED:', plant_type)
 				warned_no_plant = True
+				warn_count += 1
+				if warn_count >= get_world_size():
+					while True:
+						pass
 		common.maybe_water()
 	
 	def plant_column():
