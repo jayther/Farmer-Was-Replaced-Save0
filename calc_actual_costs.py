@@ -7,7 +7,7 @@ item_entity_map = {
 	Items.Carrot: Entities.Carrot,
 	Items.Pumpkin: Entities.Pumpkin,
 	Items.Cactus: Entities.Cactus,
-	Items.Bone: None,
+	Items.Bone: Entities.Dinosaur,
 	Items.Weird_Substance: None,
 	Items.Gold: Entities.Treasure,
 	Items.Power: None
@@ -38,14 +38,14 @@ item_unlock_map = {
 
 # power per 100 harvests
 power_req_map = {
-	Entities.Grass: 0.23,
-	Entities.Bush: 0.53,
-	Entities.Tree: 0.53,
-	Entities.Carrot: 0.13,
-	Entities.Pumpkin: 0.50,
-	Entities.Cactus: 2.66,
-	Entities.Treasure: 0.77,
-	Entities.Dinosaur: 11.18
+	Entities.Grass: 0.43, # 0.23
+	Entities.Bush: 0.93, # 0.53
+	Entities.Tree: 0.93, # 0.53
+	Entities.Carrot: 3.03, # 0.13
+	Entities.Pumpkin: 11.70, # 0.50
+	Entities.Cactus: 10.76, # 2.66
+	Entities.Treasure: 0.37, # 0.77
+	Entities.Dinosaur: 0.28 # 11.18
 }
 
 quant_item_order = [
@@ -60,6 +60,7 @@ quant_item_order = [
 ]
 
 pumpkin_spoil_rate = 0.3 # 20% with some room for 2nd+ replants
+substance_mul = 0.5 # we don't seem to use the whole stash somehow
 	
 def get_maze_max_usable_drones():
 	return common.floor(max_drones() ** 0.5) ** 2
@@ -94,9 +95,9 @@ def add_power_costs(costs, farm_size):
 		# dividing by 100 because power_cost is per 100 harvests
 		full_power_cost = req_entities * (drones_power_cost / 100)
 		total_power_cost += full_power_cost
-		#quick_print('full power cost for', item, ':', full_power_cost)
+		quick_print('full power cost for', item, ':', full_power_cost)
 	
-	costs[Items.Power] = total_power_cost
+	costs[Items.Power] = total_power_cost * 1.20 # compensate for power loss from sunflower farm step
 
 
 def get_area_yield(item, farm_size):
@@ -172,7 +173,7 @@ def recursive_actual_costs(costs, farm_size, buffer_mul = 1, extra_items = {}):
 		for single_item in single_costs:
 			if single_item == Items.Weird_Substance:
 				subs_per_area = farm_size * 2**(num_unlocked(Unlocks.Mazes) - 1)
-				preqs[single_item] = actual_costs[item] / area_yield * subs_per_area * 0.8
+				preqs[single_item] = actual_costs[item] / area_yield * subs_per_area * substance_mul
 			else:
 				preqs[single_item] = single_costs[single_item] * entities_req
 		

@@ -196,6 +196,8 @@ while num_unlocked(Unlocks.Leaderboard) == 0:
 			while num_items(item) < cost:
 				# run farm
 				farmer()
+				if num_unlocked(Unlocks.Sunflowers) > 0 and num_items(Items.Power) == 0:
+					quick_print('NO POWER at step', step, 'after gathering', cost, item)
 			#	iters += 1
 				
 			#quick_print(item, 'actual iters:', iters)
