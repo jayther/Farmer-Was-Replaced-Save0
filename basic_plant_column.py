@@ -62,7 +62,8 @@ def create_basic_plant_lb(plant_type, goal_count, multi = False):
 	
 	def multi_plant():
 		drones = []
-		for col in range(get_world_size() - 1):
+		cols = min(max_drones(), get_world_size())
+		for col in range(cols - 1):
 			drones.append(spawn_drone(plant_column_forever))
 			move(East)
 		plant_column_forever()

@@ -31,7 +31,7 @@ item_unlock_map = {
 	Items.Pumpkin: Unlocks.Pumpkins,
 	Items.Cactus: Unlocks.Cactus,
 	Items.Bone: Unlocks.Dinosaurs,
-	Items.Weird_Substance: None,
+	Items.Weird_Substance: Entities.Hedge,
 	Items.Gold: Entities.Treasure,
 	Items.Power: None
 }
@@ -42,10 +42,11 @@ power_req_map = {
 	Entities.Bush: 0.93, # 0.53
 	Entities.Tree: 0.93, # 0.53
 	Entities.Carrot: 3.03, # 0.13
-	Entities.Pumpkin: 11.70, # 0.50
+	Entities.Pumpkin: 11.90, # 0.50
 	Entities.Cactus: 10.76, # 2.66
 	Entities.Treasure: 0.37, # 0.77
-	Entities.Dinosaur: 0.28 # 11.18
+	Entities.Dinosaur: 0.28, # 11.18
+	Entities.Hedge: 1.03 # actually weird_substance
 }
 
 quant_item_order = [
@@ -61,39 +62,64 @@ quant_item_order = [
 
 pumpkin_spoil_rate = 0.3 # 20% with some room for 2nd+ replants
 substance_mul = 0.5 # we don't seem to use the whole stash somehow
-	
+
+
+# same calculations as fastest_lb
 def get_maze_max_usable_drones():
 	return common.floor(max_drones() ** 0.5) ** 2
+
+
+# power per 1000 gold
+def get_power_req_from_maze_size(maze_size):
+	return 1 / (0.4 * maze_size + 0.2) + 0.15
+
+
+# size of mini-mazes for maze_multi_reuse
+# same calculations as fastest_lb
+def get_multi_maze_size(farm_size):
+	max_num_mazes_side = common.floor(max_drones() ** 0.5)
+	return common.floor(farm_size / max_num_mazes_side)
 
 
 def add_power_costs(costs, farm_size):
 	total_power_cost = 0
 	for item in costs:
-		entity = item_entity_map[item]
+		if item == Items.Weird_Substance:
+			entity = Entities.Hedge
+		else:
+			entity = item_entity_map[item]
+		
 		if entity == None:
 			continue
 		
-		power_cost = power_req_map[entity]
 		if entity == Entities.Treasure:
+			# same calculations as fastest_lb
+			multi_maze_size = get_multi_maze_size(farm_size)
+			# power per 1000 gold
+			power_cost = get_power_req_from_maze_size(multi_maze_size)
 			usable_drones = get_maze_max_usable_drones()
-		elif entity == Entities.Dinosaur:
-			usable_drones = 1
+			
+			full_power_cost = costs[item] * (power_cost / 1000) * usable_drones
 		else:
-			size = get_world_size()
-			m_drones = max_drones()
-			multi = m_drones >= size
-			if multi:
-				usable_drones = min(m_drones, size)
-			else:
+			power_cost = power_req_map[entity]
+			if entity == Entities.Dinosaur:
 				usable_drones = 1
-		
-		area_yield = get_area_yield(item, farm_size)
-		single_yield = area_yield / (farm_size ** 2)
-		req_entities = costs[item] / single_yield
-		
-		drones_power_cost = power_cost * usable_drones
-		# dividing by 100 because power_cost is per 100 harvests
-		full_power_cost = req_entities * (drones_power_cost / 100)
+			else:
+				size = get_world_size()
+				m_drones = max_drones()
+				multi = m_drones >= size
+				if multi:
+					usable_drones = min(m_drones, size)
+				else:
+					usable_drones = 1
+			
+			area_yield = get_area_yield(item, farm_size)
+			single_yield = area_yield / (farm_size ** 2)
+			req_entities = costs[item] / single_yield
+			
+			drones_power_cost = power_cost * usable_drones
+			# dividing by 100 because power_cost is per 100 harvests
+			full_power_cost = req_entities * (drones_power_cost / 100)
 		total_power_cost += full_power_cost
 		quick_print('full power cost for', item, ':', full_power_cost)
 	
@@ -105,6 +131,10 @@ def get_area_yield(item, farm_size):
 	unlock_type = item_unlock_map[item]
 	if unlock_type == None:
 		return area
+	
+	if unlock_type == Entities.Hedge:
+		tree_bonus_mul = 2 ** (num_unlocked(Unlocks.Trees) - 1)
+		return area * 3 * tree_bonus_mul / 2
 	
 	bonus_mul = 2 ** (num_unlocked(unlock_type) - 1)
 	
@@ -146,7 +176,7 @@ def recursive_actual_costs(costs, farm_size, buffer_mul = 1, extra_items = {}):
 	# current costs
 	for item in costs:
 		quantized_cost = get_quantized_cost(costs[item], item, farm_size)
-		#quick_print('quantizing:', item, ':', costs[item], '->', quantized_cost)
+		quick_print('quantizing:', item, ':', costs[item], '->', quantized_cost)
 		if item in actual_costs:
 			actual_costs[item] += quantized_cost * buffer_mul
 		else:
@@ -174,6 +204,7 @@ def recursive_actual_costs(costs, farm_size, buffer_mul = 1, extra_items = {}):
 			if single_item == Items.Weird_Substance:
 				subs_per_area = farm_size * 2**(num_unlocked(Unlocks.Mazes) - 1)
 				preqs[single_item] = actual_costs[item] / area_yield * subs_per_area * substance_mul
+				#preqs[single_item] = single_costs[single_item] * entities_req * substance_mul
 			else:
 				preqs[single_item] = single_costs[single_item] * entities_req
 		
@@ -194,7 +225,11 @@ def recursive_actual_costs(costs, farm_size, buffer_mul = 1, extra_items = {}):
 			#		req_cost = -diff
 			#		extra_items[preq_item] = 0
 			
-			quantized_cost = get_quantized_cost(req_cost, preq_item, farm_size)
+			# weird substance is pre-quantized
+			if preq_item == Items.Weird_Substance:
+				quantized_cost = req_cost
+			else:
+				quantized_cost = get_quantized_cost(req_cost, preq_item, farm_size)
 			#quick_print('quantizing:', preq_item, ':', req_cost, '->', quantized_cost)
 			
 				
@@ -209,14 +244,6 @@ def recursive_actual_costs(costs, farm_size, buffer_mul = 1, extra_items = {}):
 
 def get_actual_costs(costs, farm_size, buffer_mul = 1):
 	actual_costs = recursive_actual_costs(costs, farm_size, buffer_mul)
-	# TODO quantize
-	
-	#extra_items = {}
-	
-	#for item in actual_costs:
-	#	quantized_cost = get_quantized_cost(actual_costs[item], item, farm_size)
-	#	extra_singles = quantized_cost - actual_costs[item]
-	#	extra_items[item] = extra_singles
 	
 	add_power_costs(actual_costs, farm_size)
 	
@@ -229,4 +256,6 @@ if __name__ == '__main__':
 	c = get_actual_costs({ Items.Wood: 1000 }, get_world_size(), 1)
 	quick_print('c:', c)
 	c = get_actual_costs({ Items.Pumpkin: 1000 }, get_world_size(), 1)
+	quick_print('c:', c)
+	c = get_actual_costs({ Items.Weird_Substance: 1000}, get_world_size(), 1)
 	quick_print('c:', c)

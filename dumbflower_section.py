@@ -29,10 +29,10 @@ def create_run(col_start, col_end, max_power = -1):
 	def run_child():
 		setup_column()
 		harvest_column()
-	
+		
 	def run():
 		drones = []
-		for i in range(get_world_size() - 1):
+		for i in range(col_start, col_end):
 			drones.append(spawn_drone(run_child))
 			move(East)
 		run_child()

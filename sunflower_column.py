@@ -186,9 +186,9 @@ def run():
 				move(North)
 			move(East)
 
-def create_run_lb(col_start, col_end, max_power = 1000):
+def create_run_lb(col_start, col_end, max_power = 1000, multi_arg = False):
 	def runner():
-		setup(col_start, col_end, max_power)
+		setup(col_start, col_end, max_power, multi_arg)
 		run()
 	return runner
 
