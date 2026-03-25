@@ -149,7 +149,6 @@ def create_run(max_cacti = -1):
 	return run	
 
 if __name__ == '__main__':
-	set_world_size(12)
 	clear()
-	runner = create_run(33554432)
+	runner = create_run()
 	runner()

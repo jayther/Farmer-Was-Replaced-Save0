@@ -1,6 +1,7 @@
 import common
 import sunflower_column
 import tracker
+import timer
 
 start_track, end_track = tracker.create_tracker([Items.Pumpkin])
 
@@ -8,6 +9,73 @@ def use_hat():
 	pass
 	#if num_unlocked(Hats.Pumpkin_Hat) > 0:
 	#	change_hat(Hats.Pumpkin_Hat)
+
+def create_run_one_min(col_start, col_end, goal = -1):
+	start_items = num_items(Items.Pumpkin)
+	
+	def need_more():
+		if goal == -1:
+			return True
+		return num_items(Items.Pumpkin) - start_items < goal
+	
+	def maybe_replace():
+		replaced = False
+		
+		if get_ground_type() != Grounds.Soil:
+			replaced = True
+			harvest()
+			till()
+			plant(Entities.Pumpkin)
+		elif get_entity_type() == None:
+			replaced = True
+			plant(Entities.Pumpkin)
+		elif get_entity_type() == Entities.Dead_Pumpkin:
+			replaced = True
+			harvest()
+			plant(Entities.Pumpkin)
+		elif not can_harvest():
+			replaced = True
+		
+		common.maybe_water()
+		
+		return replaced
+		
+	def check_and_replace():
+		x = get_pos_x()
+		common.go_to_pos(x, 0)
+		dead_indexes = set()
+		
+		# plant
+		for i in range(get_world_size()):
+			maybe_replace()
+			move(North)
+			dead_indexes.add(i)
+		
+		# check and replace
+		while len(dead_indexes) > 0:
+			not_dead = set()
+			for i in dead_indexes:
+				common.go_to_pos(x, i)
+				replaced = maybe_replace()
+				if not replaced:
+					not_dead.add(i)
+			
+			for i in not_dead:
+				dead_indexes.remove(i)
+	
+	def run():
+		while need_more():
+			common.go_to_pos(0, 0)
+			drones = []
+			for _ in range(get_world_size() - 1):
+				drones.append(spawn_drone(check_and_replace))
+				move(East)
+			check_and_replace()
+			common.wait_for_drones(drones)
+			harvest()
+		
+	return run
+			
 
 def create_run(col_start, col_end, multi = False):
 
@@ -177,15 +245,9 @@ def create_run(col_start, col_end, multi = False):
 
 if __name__ == '__main__':
 	clear()
-	set_world_size(10)
-	goal = 1000000
-	step_size = 100000
-	goal_start = num_items(Items.Pumpkin)
-	
-	while num_items(Items.Pumpkin) - goal_start < goal:
-		quick_print('new runner')
-		runner = create_run(0, 9, True)
-		step_start = num_items(Items.Pumpkin)
-		while num_items(Items.Pumpkin) - step_start < step_size:
-			quick_print('same runner')
-			runner()
+	goal = 20000000
+	runner = create_run_one_min(0, get_world_size() - 1, goal)
+	timer.start('pumpkin')
+	runner()
+	duration = timer.end('pumpkin')
+	quick_print('time to', goal, 'pumpkins:', duration, 's')
