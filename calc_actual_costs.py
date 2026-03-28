@@ -44,9 +44,9 @@ power_req_map = {
 	Entities.Carrot: 16.04, # 0.13
 	Entities.Pumpkin: 17.93, # 0.50
 	Entities.Cactus: 80.32, # 2.66
-	Entities.Treasure: 0.37, # 0.77
+	Entities.Treasure: 0.37, # 0.77 (unused)
 	Entities.Dinosaur: 0.16, # 11.18
-	Entities.Hedge: 1.03 # actually weird_substance
+	Entities.Hedge: 8.46 # actually weird_substance
 }
 
 quant_item_order = [
@@ -100,9 +100,8 @@ def get_power_cost(cost, item, farm_size):
 		multi_maze_size = get_multi_maze_size(farm_size)
 		# power per 1000 gold
 		power_cost = get_power_req_from_maze_size(multi_maze_size)
-		usable_drones = get_maze_max_usable_drones()
 		
-		full_power_cost = cost * (power_cost / 1000) * usable_drones
+		full_power_cost = cost * (power_cost / 1000)
 	else:
 		power_cost = power_req_map[entity]
 		if entity == Entities.Dinosaur:
@@ -160,10 +159,6 @@ def suggest_power_corrections(costs, items_power_used, items_farmed, items_power
 			continue
 		
 		if item in items_power_empty and items_power_empty[item]:
-			continue
-		
-		entity = item_entity_map[item]
-		if entity == None:
 			continue
 		
 		unlock_type = item_unlock_map[item]
