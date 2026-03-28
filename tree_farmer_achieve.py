@@ -1,8 +1,8 @@
 import common
 import timer
 
-goal = 300000000 # 200000000
-item_count = num_items(Items.Carrot) + goal
+goal = 1000000000 # 200000000
+item_count = num_items(Items.Wood) + goal
 start_pos = (0, 0)
 		
 def poly_planter(plant_type, pos):
@@ -18,6 +18,7 @@ def poly_planter(plant_type, pos):
 		till()
 	
 	plant(plant_type)
+	common.maybe_water()
 
 def normalize_carrot():
 	while get_ground_type() == Grounds.Grassland:
@@ -25,18 +26,32 @@ def normalize_carrot():
 	if get_entity_type() != Entities.Carrot:
 		plant(Entities.Carrot)
 
+def normalize_tree():
+	#x = get_pos_x()
+	#y = get_pos_y()
+	entity_type = get_entity_type()
+	if entity_type != Entities.Tree:
+		plant(Entities.Tree)
+		common.maybe_water()
+	#if entity_type != Entities.Tree or entity_type != Entities.Bush:
+	#	if (x + y) % 2 == 0:
+	#		plant(Entities.Tree)
+	#
+	#	else:
+	#		plant(Entities.Bush)
+
 def harvester():
 	common.go_to_pos(start_pos[0], start_pos[1])
 	
 	# setup
 	for _ in range(get_world_size()):
-		normalize_carrot()
+		normalize_tree()
 		move(North)
 	
 	# harvest
 	restore_drone = None
-	while num_items(Items.Carrot) < item_count:
-		normalize_carrot()
+	while num_items(Items.Wood) < item_count:
+		normalize_tree()
 		if can_harvest():
 			plant_type, pos = get_companion()
 			def create_planter():
@@ -48,12 +63,12 @@ def harvester():
 			harvest()
 			if (pos[0] % 2) == 0:
 				def restore_planter():
-					poly_planter(Entities.Carrot, pos)
+					poly_planter(Entities.Tree, pos)
 				restore_drone = spawn_drone(restore_planter)
 			else:
 				restore_drone = None
 		
-		normalize_carrot()
+		normalize_tree()
 		move(North)
 
 def farmer():
@@ -70,8 +85,8 @@ def farmer():
 	harvester()
 	common.wait_for_drones(drones)
 
-#clear()
-timer.start('carrot')
+clear()
+timer.start('wood')
 farmer()
-duration = timer.end('carrot')
-quick_print('time to', goal, 'carrots:', duration, 's')
+duration = timer.end('wood')
+quick_print('time to', goal, 'wood:', duration, 's')

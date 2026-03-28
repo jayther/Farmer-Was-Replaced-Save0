@@ -142,7 +142,11 @@ def maybe_farm_power(actual_costs):
 	current_power = num_items(Items.Power)
 	net_power = current_power - start_power
 	power_farmed = current_power - pre_sun_power
-	quick_print(net_power, 'net power;', power_farmed , '/', power_req, 'power farmed (', current_power , 'current);', 'Resume normal farming')
+	quick_print(
+		net_power, 'net power;',
+		power_farmed , '/', power_req, 'power farmed (', current_power , 'current);',
+		'Resume normal farming'
+	)
 
 
 while num_unlocked(Unlocks.Leaderboard) == 0:
