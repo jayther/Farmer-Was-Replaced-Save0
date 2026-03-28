@@ -9,6 +9,8 @@ def plant_tree(x, y):
 def fertilize_pattern(x, y):
 	if ((x * 3) + y) % 5 == 0:
 	#	print(x, y)
+		while num_items(Items.Fertilizer) < 2:
+			pass
 		use_item(Items.Fertilizer)
 		use_item(Items.Weird_Substance)
 		use_item(Items.Fertilizer)

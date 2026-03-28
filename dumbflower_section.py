@@ -17,8 +17,8 @@ def create_run(col_start, col_end, max_power = -1):
 		while need_more_power():
 			if can_harvest():
 				harvest()
-			plant(Entities.Sunflower)
-			common.maybe_water()
+				plant(Entities.Sunflower)
+				common.maybe_water()
 			move(North)
 		
 	def setup_column():
@@ -44,5 +44,6 @@ def create_run(col_start, col_end, max_power = -1):
 
 if __name__ == '__main__':
 	clear()
-	runner = create_run(0, 31, 100000)
+	set_world_size(12)
+	runner = create_run(0, 7, 100000)
 	runner()

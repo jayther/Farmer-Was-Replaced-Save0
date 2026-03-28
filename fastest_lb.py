@@ -33,15 +33,14 @@ def create_farmer(item, item_count):
 	size = get_world_size()
 	m_drones = max_drones()
 	multi = m_drones > 1
-
-	if multi:
-		quick_print('multi enabled for ', item, '(max:', max_drones(), ')')
 	
 	if item == Items.Power:
 		clear()
 		if m_drones == 1:
+			quick_print('using smartflower farm')
 			return sunflower_column.create_run_lb(0, size - 1, item_count)
 		else:
+			quick_print('using dumbflower farm (', m_drones, 'drones,', size, 'size)')
 			return dumbflower_section.create_run(0, m_drones - 1, item_count)
 	elif item == Items.Hay:
 		return column_farmer.create_farmer_lb({
@@ -86,7 +85,6 @@ def create_farmer(item, item_count):
 		
 		clear()
 		if use_multi:
-			quick_print('MAZE_MULTI_REUSE maze_size:', maze_size)
 			return maze_multi_reuse.create_run(maze_size, item_count)
 		else:
 			return maze_reuse_section.create_run(0, size - 1, item_count)
@@ -99,32 +97,6 @@ def create_farmer(item, item_count):
 		quick_print('WARNING:', item, 'is not mapped to any farming function')
 		return None
 
-
-def get_power_threshold():
-	return 200
-
-def get_power_goal():
-	return 1200
-
-def need_more_power():
-	if num_unlocked(Unlocks.Sunflowers) == 0:
-		return False
-	
-	if num_items(Items.Power) >= get_power_threshold():
-		return False
-	
-	return True
-
-def create_step_for_power():
-	quick_print('INSERTING carrot step for power')
-	return (None, { Items.Carrot: get_power_goal() / 4 })
-
-def farm_power():
-	clear()
-	power_goal = get_power_goal()
-	farmer = sunflower_column.create_run_lb(0, get_world_size(), power_goal)
-	while num_items(Items.Power) < power_goal:
-		farmer()
 		
 def maybe_farm_power(actual_costs):
 	if num_unlocked(Unlocks.Sunflowers) == 0:
@@ -136,7 +108,14 @@ def maybe_farm_power(actual_costs):
 	world_size = get_world_size()
 	
 	power_req = actual_costs[Items.Power]
+	
+	if num_items(Items.Power) >= power_req:
+		quick_print('have enough power:', num_items(Items.Power), '/', power_req, '. Skipping power farm.')
+		return
+	
 	sunflower_goal = max(power_req / 4, world_size ** 2)
+	
+	start_power = num_items(Items.Power)
 	
 	quick_print('Farming for', power_req, 'power...')
 	
@@ -151,17 +130,25 @@ def maybe_farm_power(actual_costs):
 		
 		while num_items(item) < cost:
 			farmer()
+
+	pre_sun_power = num_items(Items.Power)
 			
 	# farm actual sunflowers
-	farmer = create_farmer(Items.Power, sunflower_goal)
-	while num_items(Items.Power) < sunflower_goal:
+	farmer = create_farmer(Items.Power, power_req)
+	while num_items(Items.Power) < power_req:
 		farmer()
 	
-	quick_print('Resume normal farming')
+	current_power = num_items(Items.Power)
+	net_power = current_power - start_power
+	power_farmed = current_power - pre_sun_power
+	quick_print(net_power, 'net power;', power_farmed , '/', power_req, 'power farmed (', current_power , 'current);', 'Resume normal farming')
 	
+
+all_suggestions = []
 
 while num_unlocked(Unlocks.Leaderboard) == 0:
 	world_size = get_world_size()
+	power_unlocked = num_unlocked(Unlocks.Sunflowers) > 0
 	timer.start('unlock')
 	unlock_type, costs = step_map[step]
 	actual_costs = calc_actual_costs.get_actual_costs(costs, world_size, 1)
@@ -174,6 +161,10 @@ while num_unlocked(Unlocks.Leaderboard) == 0:
 		# farm for power
 		maybe_farm_power(actual_costs)
 		
+		items_power_used = {}
+		items_farmed = {}
+		items_power_empty = {}
+		
 		# farm the required stuff
 		for item in item_order:
 			if item not in actual_costs:
@@ -182,12 +173,24 @@ while num_unlocked(Unlocks.Leaderboard) == 0:
 			cost = actual_costs[item]
 			farmer = create_farmer(item, cost)
 			
+			start_power = num_items(Items.Power)
+			start_items = num_items(item)
 			while num_items(item) < cost:
 				# run farm
 				farmer()
-				if num_unlocked(Unlocks.Sunflowers) > 0 and num_items(Items.Power) == 0:
+				if power_unlocked and num_items(Items.Power) == 0:
 					quick_print('NO POWER at step', step, 'after gathering', cost, item)
+			d_power = num_items(Items.Power) - start_power
+			d_items = num_items(item) - start_items
 			
+			if power_unlocked:
+				items_power_used[item] = d_power
+				items_farmed[item] = d_items
+				items_power_empty[item] = num_items(Items.Power) == 0
+				quick_print('power used:', d_power, 'power for', d_items, item)
+		
+		suggestions = calc_actual_costs.suggest_power_corrections(actual_costs, items_power_used, items_farmed, items_power_empty, world_size)
+		all_suggestions.append(suggestions)
 			
 		if unlock_type == None:
 			unlocked = True
@@ -205,3 +208,26 @@ while num_unlocked(Unlocks.Leaderboard) == 0:
 		quick_print('NOT unlocked', unlock_type, '(', timer.end('unlock'), 's)')
 	
 	step += 1
+
+suggestions_sum = {}
+suggestions_count = {}
+for suggestions in all_suggestions:
+	for item in item_order:
+		if item not in suggestions:
+			continue
+			
+		if item not in suggestions_sum:
+			suggestions_sum[item] = 0
+		suggestions_sum[item] += suggestions[item]
+	
+		if item not in suggestions_count:
+			suggestions_count[item] = 0
+		suggestions_count[item] += 1
+
+suggestions_avg = {}
+for item in item_order:
+	if item not in suggestions_sum:
+		continue
+	suggestions_avg[item] = suggestions_sum[item] / suggestions_count[item]
+
+quick_print('AVG POWER SUGGESTIONS:', suggestions_avg)
