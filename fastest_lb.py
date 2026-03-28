@@ -155,6 +155,7 @@ while num_unlocked(Unlocks.Leaderboard) == 0:
 	quick_print('unlocking', unlock_type, unlock_lvl, '->', unlock_lvl + 1, '... (', actual_costs, ')')
 	reruns = 0
 	unlocked = False
+	
 	while not unlocked:
 		
 		# farm for power

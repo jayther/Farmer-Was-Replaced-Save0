@@ -1,7 +1,7 @@
 import calc_actual_costs
 
 
-enabled = True
+enabled = False
 
 items_power_used = {}
 items_farmed = {}

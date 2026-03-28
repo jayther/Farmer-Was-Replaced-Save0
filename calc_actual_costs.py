@@ -342,3 +342,5 @@ if __name__ == '__main__':
 	quick_print('c:', c)
 	c = get_actual_costs({ Items.Weird_Substance: 1000}, get_world_size(), 1)
 	quick_print('c:', c)
+	c = get_actual_costs({ Items.Bone: 1000 }, get_world_size(), 1)
+	quick_print('c:', c)

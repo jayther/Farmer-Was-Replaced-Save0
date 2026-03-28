@@ -2,7 +2,9 @@ unlocks = {
 	Unlocks.Pumpkins: 2,
 	Unlocks.Carrots: 2,
 	Unlocks.Cactus: 2,
-	Unlocks.Expand: 3
+	Unlocks.Expand: 3,
+	Unlocks.Dinosaurs: 4,
+	Unlocks.Trees: 3
 }
 items = {}
 globals = {}
