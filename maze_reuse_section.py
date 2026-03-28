@@ -418,25 +418,19 @@ def create_run(col_start, col_end, max_gold = -1, timer_enabled_arg = False):
 	return run
 	
 if __name__ == '__main__':
-	results = []
 	sum_power_used = 0
-	sum_gold_got = 0
 	for _ in range(sim_max_runs):
 		start_power = num_items(Items.Power)
-		sim_start_gold = num_items(Items.Gold)
 		runner = create_run(0, target_size - 1)
 		runner()
 		power_used = start_power - num_items(Items.Power)
-		gold_got = num_items(Items.Gold) - sim_start_gold
 		#quick_print('-------')
 		#quick_print('maze size:', target_size)
 		#quick_print('gold produced:', num_items(Items.Gold))
 		#quick_print('power used:', power_used)
 		#quick_print('power per 1000 gold (size', target_size, '):', power_used / num_items(Items.Gold) * 1000)
-		results.append((power_used, gold_got))
 		sum_power_used += power_used
-		sum_gold_got += gold_got
 	
-	avg_power_rate = sum_power_used / sum_gold_got * 1000
-	quick_print('avg power per 1000 gold (size', target_size, '):', avg_power_rate)
+	avg_power_rate = sum_power_used / sim_max_runs
+	quick_print('avg power per 300 entities (size', target_size, '):', avg_power_rate)
 	

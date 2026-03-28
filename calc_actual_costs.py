@@ -73,9 +73,12 @@ def get_maze_max_usable_drones():
 	return common.floor(max_drones() ** 0.5) ** 2
 
 
-# power per 1000 gold
+
 def get_power_req_from_maze_size(maze_size):
-	return 1 / (0.4 * maze_size + 0.2) + 0.15
+	# per 300 treasure entities
+	return 2.31107 * maze_size ** 2 + 17.7875 * maze_size + 1.06
+	# per 1000 gold. faulty equation as it doesn't take bonuses into account
+	#return 1 / (0.4 * maze_size + 0.2) + 0.15
 
 
 # size of mini-mazes for maze_multi_reuse
@@ -93,15 +96,19 @@ def get_power_cost(cost, item, farm_size):
 		entity = item_entity_map[item]
 	
 	if entity == None:
-		continue
+		return 0
 	
 	if entity == Entities.Treasure:
 		# same calculations as fastest_lb
 		multi_maze_size = get_multi_maze_size(farm_size)
-		# power per 1000 gold
-		power_cost = get_power_req_from_maze_size(multi_maze_size)
+		# power per 300 entities
+		power_cost_300 = get_power_req_from_maze_size(multi_maze_size)
+		power_cost = power_cost_300 / 300
+		bonus_mul = get_bonus(Unlocks.Mazes)
+		single_yield = multi_maze_size ** 2 * bonus_mul
+		entities_req = cost / single_yield
 		
-		full_power_cost = cost * (power_cost / 1000)
+		full_power_cost = entities_req * power_cost
 	else:
 		power_cost = power_req_map[entity]
 		if entity == Entities.Dinosaur:
