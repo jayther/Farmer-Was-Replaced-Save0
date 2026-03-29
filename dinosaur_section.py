@@ -39,6 +39,8 @@ def on_move(x, y):
 	global next_apple
 	global snake
 	if next_apple != None and x == next_apple[0] and y == next_apple[1]:
+		if get_entity_type() != Entities.Apple:
+			quick_print('APPLE NOT FOUND')
 		snake += 1
 		next_apple = measure()
 		
@@ -227,13 +229,13 @@ def run_circle():
 	
 	path_side_map, max_snake, inner_rect_map, outer_rect_map = create_circle_map(snake)
 	dir_index = 0
-	common.go_to_pos(path_side_map[South][0], path_side_map[South][1], True)
+	common.go_to_pos(path_side_map[South][0], path_side_map[South][1], True, on_move)
+	ignore = False
 	
 	while True:
 		path = []
 		found = False
 		cur_side = dirs[dir_index]
-		ignore = False
 		final_point = path_side_map[cur_side]
 		
 		if not ignore:
@@ -272,7 +274,9 @@ def run_circle():
 				if path_side_map == None:
 					break
 				move(East)
+				on_move(get_pos_x(), get_pos_y())
 				move(South)
+				on_move(get_pos_x(), get_pos_y())
 		
 		dir_index = (dir_index + 1) % len(dirs)
 	
@@ -428,6 +432,5 @@ def create_run():
 if __name__ == "__main__":
 	clear()
 	runner = create_run()
-	while True:
-		runner()
+	runner()
 		

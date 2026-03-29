@@ -15,6 +15,9 @@ import maze_reuse_section
 import dinosaur_section
 import maze_multi_reuse
 import suggester
+import hay_poly_farmer
+import carrot_poly_farmer
+import tree_poly_farmer
 
 step = 0
 
@@ -44,29 +47,41 @@ def create_farmer(item, item_count):
 			quick_print('using dumbflower farm (', m_drones, 'drones,', size, 'size)')
 			return dumbflower_section.create_run(0, m_drones - 1, item_count)
 	elif item == Items.Hay:
-		return column_farmer.create_farmer_lb({
-			0: basic_plant_column.create_basic_plant_lb(Entities.Grass, item_count, multi)
-		}, item, item_count)
+		if m_drones >= 4 and num_unlocked(Unlocks.Polyculture) > 0:
+			clear()
+			return hay_poly_farmer.create_run(0, m_drones - 1, item_count)
+		else:
+			return column_farmer.create_farmer_lb({
+				0: basic_plant_column.create_basic_plant_lb(Entities.Grass, item_count, multi)
+			}, item, item_count)
 	elif item == Items.Wood:
 		if num_unlocked(Unlocks.Trees) > 0:
-			return column_farmer.create_farmer_lb({
-				0: basic_plant_column.create_basic_plant_lb(Entities.Tree, item_count, multi)
-			}, item, item_count)
+			if m_drones >= 4 and num_unlocked(Unlocks.Polyculture) > 0:
+				clear()
+				return tree_poly_farmer.create_run(0, m_drones - 1, item_count)
+			else:
+				return column_farmer.create_farmer_lb({
+					0: basic_plant_column.create_basic_plant_lb(Entities.Tree, item_count, multi)
+				}, item, item_count)
 		else:
 			return column_farmer.create_farmer_lb({
 				0: basic_plant_column.create_basic_plant_lb(Entities.Bush, item_count, multi)
 			}, item, item_count)
 	elif item == Items.Carrot:
-		return column_farmer.create_farmer_lb({
-			0: basic_plant_column.create_basic_plant_lb(Entities.Carrot, item_count, multi)
-		}, item, item_count)
+		if m_drones >= 4 and num_unlocked(Unlocks.Polyculture) > 0:
+			clear()
+			return carrot_poly_farmer.create_run(0, m_drones - 1, item_count)
+		else:
+			return column_farmer.create_farmer_lb({
+				0: basic_plant_column.create_basic_plant_lb(Entities.Carrot, item_count, multi)
+			}, item, item_count)
 	elif item == Items.Pumpkin:
 		clear()
 		return pumpkin_section.create_run(0, size - 1, m_drones >= size)
 	elif item == Items.Weird_Substance:
 		clear()
 		if multi:
-			return weird_multi_section.create_run(0, m_drones - 1)
+			return weird_multi_section.create_run(0, m_drones - 1, item_count)
 		else:
 			return weird_section.create_run(0, size - 1)
 	elif item == Items.Cactus:
@@ -176,11 +191,24 @@ while num_unlocked(Unlocks.Leaderboard) == 0:
 			farmer = create_farmer(item, cost)
 			
 			suggester.start_item(item)
+			starting_count = num_items(item)
+			iterations = 0
 			while num_items(item) < cost:
 				# run farm
 				farmer()
 				if power_unlocked and num_items(Items.Power) == 0:
 					quick_print('NO POWER at step', step, 'after gathering', cost, item)
+				iterations += 1
+			ending_count = num_items(item)
+			diff_count = ending_count - starting_count
+			if item == Items.Weird_Substance:
+				quick_print(
+					'SUBS farm actual cost:', cost,
+					'; starting:', starting_count,
+					'; farmed:', diff_count,
+					'; ending:', ending_count,
+					'; iters:', iterations
+				)
 			
 			suggester.end_item(item)
 		

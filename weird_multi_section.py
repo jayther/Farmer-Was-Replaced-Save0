@@ -37,7 +37,21 @@ def harvest_column():
 		harvest()
 		move(North)
 
-def create_run(col_start, col_end):
+def create_run(col_start, col_end, goal = -1):
+	def need_more():
+		if goal == -1:
+			return True
+		return num_items(Items.Weird_Substance) < goal
+		
+	def harvest_column():
+		#change_hat(Hats.Top_Hat)
+		for i in range(get_world_size()):
+			while not can_harvest():
+				pass
+			harvest()
+			if not need_more():
+				break
+			move(North)
 	
 	def run():
 		common.go_to_pos(col_start, 0)

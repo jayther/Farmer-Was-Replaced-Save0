@@ -49,6 +49,9 @@ step_map = [
 	( Unlocks.Megafarm , {Items.Gold:2000} ), # first megafarm (2 drones)
 	( Unlocks.Megafarm , {Items.Gold:8000} ), # 4 drones
 	( Unlocks.Megafarm , {Items.Gold:32000} ), # 8 drones
+	( Unlocks.Polyculture , {Items.Pumpkin:3000} ), # first polyculture
+	( Unlocks.Polyculture , {Items.Bone:10000} ),
+	( Unlocks.Polyculture , {Items.Bone:50000} ),
 	( Unlocks.Watering , {Items.Wood:51200} ),
 	( Unlocks.Fertilizer , {Items.Wood:54000} ),
 	( Unlocks.Grass , {Items.Wood:62500} ),
@@ -64,6 +67,7 @@ step_map = [
 	( Unlocks.Trees , {Items.Hay:307000} ),
 	( Unlocks.Grass , {Items.Wood:312000} ),
 	( Unlocks.Dinosaurs , {Items.Cactus:432000} ),
+	( Unlocks.Polyculture , {Items.Bone:250000} ),
 	( Unlocks.Mazes , {Items.Cactus:432000} ),
 	( Unlocks.Expand , {Items.Pumpkin:512000} ), # 22x22
 	( Unlocks.Megafarm , {Items.Gold:512000} ), # 32 drones
@@ -72,6 +76,7 @@ step_map = [
 	( Unlocks.Watering , {Items.Wood:819000} ),
 	( Unlocks.Pumpkins , {Items.Carrot:1020000} ),
 	( Unlocks.Trees , {Items.Hay:1230000} ),
+	( Unlocks.Polyculture , {Items.Bone:1250000} ),
 	( Unlocks.Grass , {Items.Wood:1560000} ),
 	( Unlocks.Dinosaurs , {Items.Cactus:2590000} ),
 	( Unlocks.Mazes , {Items.Cactus:2590000} ),

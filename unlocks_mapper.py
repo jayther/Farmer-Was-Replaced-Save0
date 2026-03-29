@@ -1,21 +1,22 @@
 
 
 target_unlocks = [
-	Unlocks.Grass,
-	Unlocks.Speed,
-	Unlocks.Expand,
-	Unlocks.Plant,
-	Unlocks.Carrots,
-	Unlocks.Pumpkins,
-	Unlocks.Cactus,
-	Unlocks.Dinosaurs,
-	Unlocks.Fertilizer,
-	Unlocks.Mazes,
-	Unlocks.Megafarm,
-	Unlocks.Watering,
-	Unlocks.Sunflowers,
-	Unlocks.Trees,
-	Unlocks.Leaderboard
+	Unlocks.Polyculture
+#	Unlocks.Grass,
+#	Unlocks.Speed,
+#	Unlocks.Expand,
+#	Unlocks.Plant,
+#	Unlocks.Carrots,
+#	Unlocks.Pumpkins,
+#	Unlocks.Cactus,
+#	Unlocks.Dinosaurs,
+#	Unlocks.Fertilizer,
+#	Unlocks.Mazes,
+#	Unlocks.Megafarm,
+#	Unlocks.Watering,
+#	Unlocks.Sunflowers,
+#	Unlocks.Trees,
+#	Unlocks.Leaderboard
 ]
 
 quick_print('unlock_map = {')
