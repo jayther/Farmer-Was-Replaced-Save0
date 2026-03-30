@@ -61,17 +61,12 @@ quant_item_order = [
 ]
 
 pumpkin_spoil_rate = 0.3 # 20% with some room for 2nd+ replants
-substance_mul = 0.5 # we don't seem to use the whole stash somehow
-
-
-def get_bonus(unlock_type):
-	return 2 ** (num_unlocked(unlock_type) - 1)
+substance_buffer_mul = 1.1
 
 
 # same calculations as fastest_lb
 def get_maze_max_usable_drones():
 	return common.floor(max_drones() ** 0.5) ** 2
-
 
 
 def get_power_req_from_maze_size(maze_size):
@@ -104,11 +99,31 @@ def get_power_cost(cost, item, farm_size):
 		# power per 300 entities
 		power_cost_300 = get_power_req_from_maze_size(multi_maze_size)
 		power_cost = power_cost_300 / 300
-		bonus_mul = get_bonus(Unlocks.Mazes)
+		bonus_mul = common.get_bonus(Unlocks.Mazes)
 		single_yield = multi_maze_size ** 2 * bonus_mul
 		entities_req = cost / single_yield
 		
 		full_power_cost = entities_req * power_cost
+		
+	elif entity == Entities.Hedge:
+		power_cost = power_req_map[entity]
+		# "area" yield is only single yield
+		single_yield = get_area_yield(item, farm_size)
+		req_entities = cost / single_yield
+		
+		full_power_cost = req_entities * (power_cost / 100)
+	
+	elif entity == Entities.Dinosaur:
+		area = farm_size ** 2
+		power_cost = power_req_map[entity]
+		bonus_mul = common.get_bonus(Unlocks.Dinosaurs)
+		max_yield = area ** 2 * bonus_mul
+		
+		full_harvests = common.floor(cost / max_yield)
+		remaining = cost % max_yield
+		remaining_entities = common.ceil(remaining ** 0.5)
+		
+		full_power_cost = (full_harvests * area + remaining_entities) * (power_cost / 100)
 	else:
 		power_cost = power_req_map[entity]
 		if entity == Entities.Dinosaur:
@@ -191,7 +206,7 @@ def suggest_power_corrections(costs, items_power_used, items_farmed, items_power
 
 
 def get_maze_substance_cost(maze_size):
-	return maze_size * get_bonus(Unlocks.Mazes)
+	return maze_size * common.get_bonus(Unlocks.Mazes)
 
 
 def get_area_yield(item, farm_size):
@@ -201,18 +216,23 @@ def get_area_yield(item, farm_size):
 		return area
 	
 	if unlock_type == Entities.Hedge:
+		
 		# weird subs farm's columns are equal to usable drones if less than farm size
-		usable_area = min(farm_size, max_drones()) * farm_size
-		tree_bonus_mul = get_bonus(Unlocks.Trees)
-		grass_bonus_mul = get_bonus(Unlocks.Grass)
+		#usable_area = min(farm_size, max_drones()) * farm_size
+		tree_bonus_mul = common.get_bonus(Unlocks.Trees)
+		#grass_bonus_mul = common.get_bonus(Unlocks.Grass)
+		
+		# weird farmer exit early so quantize to a single yield
+		return tree_bonus_mul / 2
 		
 		# half the area are trees, other half are grass
 		# base trees give 5 wood, and weird substance take up half the yield
-		return (usable_area / 2 * 5 * tree_bonus_mul / 2) + (usable_area / 2 * grass_bonus_mul / 2)
-		#return area * 3 * tree_bonus_mul / 2
+		#return (usable_area / 2 * 5 * tree_bonus_mul / 2) + (usable_area / 2 * grass_bonus_mul / 2)
 	
-	bonus_mul = get_bonus(unlock_type)
+	bonus_mul = common.get_bonus(unlock_type)
 	
+	if item == Items.Bone:
+		return bonus_mul
 	if item == Items.Gold:
 		maze_size = get_multi_maze_size(farm_size)		
 		return maze_size ** 2 * bonus_mul
@@ -282,12 +302,12 @@ def recursive_actual_costs(costs, farm_size, buffer_mul = 1, extra_items = {}):
 				#preqs[single_item] = actual_costs[item] / area_yield * subs_per_area * substance_mul
 				#preqs[single_item] = single_costs[single_item] * entities_req * substance_mul
 				#preqs[single_item] = single_costs[single_item] * entities_req
-				bonus_mul = get_bonus(Unlocks.Mazes)
+				bonus_mul = common.get_bonus(Unlocks.Mazes)
 				maze_size = get_multi_maze_size(farm_size)
 				gold_per_maze = (maze_size ** 2) * bonus_mul
 				num_mazes = common.ceil(actual_costs[item] / gold_per_maze)
 				subs_per_maze = get_maze_substance_cost(maze_size)
-				preqs[single_item] = num_mazes * subs_per_maze
+				preqs[single_item] = common.ceil(num_mazes * subs_per_maze * substance_buffer_mul)
 			else:
 				preqs[single_item] = single_costs[single_item] * entities_req
 		

@@ -264,6 +264,8 @@ def run_circle():
 		path.append(path_side_map[cur_side])
 		for p in path:
 			common.go_to_pos(p[0], p[1], True, on_move)
+			if not need_more():
+				return False
 		
 		if snake >= max_snake:
 			ignore = True
@@ -343,6 +345,8 @@ def run_column_squiggle():
 		
 		for p in path:
 			common.go_to_pos(p[0], p[1], True, on_move)
+			if not need_more():
+				return False
 			
 		if not can_move_anywhere():
 			return False
@@ -355,6 +359,8 @@ def run_column_squiggle():
 				break
 			for p in return_trip_path:
 				common.go_to_pos(p[0], p[1], True, on_move)
+				if not need_more():
+					return False
 				
 		if not can_move_anywhere():
 			return False
@@ -370,12 +376,16 @@ def run_column_squiggle():
 	
 	for p in final_path:
 		common.go_to_pos(p[0], p[1], True, on_move)
+		if not need_more():
+			return False
 		
 	return False
 	
 def run_squiggle():
 	for (x, y) in squiggle_path:
 		common.go_to_pos(x, y, True, on_move)
+		if not need_more():
+			return False
 		if not can_move_anywhere():
 			return False
 	return True
@@ -389,16 +399,25 @@ algo_length = len(algos)
 
 snake = 1
 next_apple = None
+goal = -1
 
 
+def need_more():
+	if goal == -1:
+		return True
+	bonus_mul = common.get_bonus(Unlocks.Dinosaurs)
+	bones = snake ** 2 * bonus_mul
+	return bones < goal
 
-def create_run():
+
+def create_run(goal_arg = -1):
 	def run():
 		global next_apple
 		global snake
 		global size
 		global min_circle_radius
 		global squiggle_path
+		global goal
 		size = get_world_size()
 		og_size = size
 		if (size % 4) != 0:
@@ -415,7 +434,8 @@ def create_run():
 		snake = 1
 		quick_print('dinosaur precheck, entity_type:', get_entity_type())
 		next_apple = measure()
-		while algo_index < algo_length:
+		goal = goal_arg
+		while algo_index < algo_length and need_more():
 			repeat = algo()
 			if not repeat:
 				algo_index += 1

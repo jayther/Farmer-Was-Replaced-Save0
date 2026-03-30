@@ -18,8 +18,14 @@ def fertilize_pattern(x, y):
 			use_item(Items.Weird_Substance)
 			use_item(Items.Fertilizer)
 
-def create_run(col_start, col_end):
+def create_run(col_start, col_end, goal = -1):
 	first_run = True
+	
+	def need_more():
+		if goal == -1:
+			return True
+		return num_items(Items.Weird_Substance) < goal
+	
 	def run():
 		global first_run
 		if first_run:
@@ -48,8 +54,16 @@ def create_run(col_start, col_end):
 				while not can_harvest():
 					pass
 				harvest()
+				
+				if not need_more():
+					break
+				
 				plant_tree(i, j)
 				move(North)
+				
+			if not need_more():
+				break
+				
 			move(East)
 				
 		common.go_to_pos(col_start, 0)	

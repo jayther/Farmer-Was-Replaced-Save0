@@ -46,8 +46,10 @@ def create_run(col_start, col_end, goal = -1):
 	def harvest_column():
 		#change_hat(Hats.Top_Hat)
 		for i in range(get_world_size()):
-			while not can_harvest():
+			while not can_harvest() and need_more():
 				pass
+			if not need_more():
+				break
 			harvest()
 			if not need_more():
 				break

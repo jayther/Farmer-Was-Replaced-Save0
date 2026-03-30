@@ -83,7 +83,7 @@ def create_farmer(item, item_count):
 		if multi:
 			return weird_multi_section.create_run(0, m_drones - 1, item_count)
 		else:
-			return weird_section.create_run(0, size - 1)
+			return weird_section.create_run(0, size - 1, item_count)
 	elif item == Items.Cactus:
 		clear()
 		if m_drones >= size:
@@ -107,7 +107,7 @@ def create_farmer(item, item_count):
 		
 	elif item == Items.Bone:
 		clear()
-		return dinosaur_section.create_run()
+		return dinosaur_section.create_run(item_count)
 	
 	else:
 		quick_print('WARNING:', item, 'is not mapped to any farming function')
