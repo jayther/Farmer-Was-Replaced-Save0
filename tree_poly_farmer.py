@@ -92,9 +92,10 @@ def create_run(col_start, col_end, goal = -1):
 	return run
 
 if __name__ == '__main__':
+	goal = 1000000000
 	clear()
 	timer.start('wood')
-	farmer = create_run(0, get_world_size() - 1, 1000000000)
+	farmer = create_run(0, get_world_size() - 1, goal + num_items(Items.Wood))
 	farmer()
 	duration = timer.end('wood')
 	quick_print('time to', goal, 'wood:', duration, 's')
