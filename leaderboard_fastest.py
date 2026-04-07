@@ -6,7 +6,7 @@ items = {}
 globals = {}
 seed = 1
 filename = 'fastest_lb'
-speedup = 1000
+speedup = 32
 
 def print_readable(seconds):
 	hours = common.floor(seconds / (60 * 60))

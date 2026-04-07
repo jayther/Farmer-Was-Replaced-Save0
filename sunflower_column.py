@@ -26,17 +26,17 @@ def use_hat():
 	#if num_unlocked(Hats.Golden_Sunflower_Hat) > 0:
 	#	change_hat(Hats.Golden_Sunflower_Hat)
 	
-def setup(col_start, col_end, max_gold_arg = -1, multi_arg = False):
+def setup(col_start, col_end, max_power_arg = -1, multi_arg = False):
 	global sun_col_start
 	global sun_col_end
 	global perma_ignore
-	global max_gold
-	global start_gold
+	global max_power
+	global start_power
 	global sun_map
 	global multi
 	
-	max_gold = max_gold_arg
-	start_gold = num_items(Items.Power)
+	max_power = max_power_arg
+	start_power = num_items(Items.Power)
 	
 	sun_col_start = col_start
 	sun_col_end = col_end

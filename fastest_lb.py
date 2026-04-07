@@ -20,6 +20,7 @@ import carrot_poly_farmer
 import tree_poly_farmer
 
 step = 0
+prev_item = None
 
 item_order = [
 	Items.Hay,
@@ -85,7 +86,10 @@ def create_farmer(item, item_count):
 		else:
 			return weird_section.create_run(0, size - 1, item_count)
 	elif item == Items.Cactus:
-		clear()
+		if prev_item == item:
+			common.go_to_pos(0, 0)
+		else:
+			clear()
 		if m_drones >= size:
 			return cactus_brick_lb.create_run(item_count - num_items(Items.Cactus))
 		else:
@@ -115,6 +119,8 @@ def create_farmer(item, item_count):
 
 		
 def maybe_farm_power(actual_costs):
+	global prev_item
+	
 	if num_unlocked(Unlocks.Sunflowers) == 0:
 		return
 		
@@ -143,6 +149,7 @@ def maybe_farm_power(actual_costs):
 			continue
 		cost = sunflower_costs[item]
 		farmer = create_farmer(item, cost)
+		prev_item = item
 		
 		while num_items(item) < cost:
 			farmer()
@@ -151,6 +158,7 @@ def maybe_farm_power(actual_costs):
 			
 	# farm actual sunflowers
 	farmer = create_farmer(Items.Power, power_req)
+	prev_item = Items.Power
 	while num_items(Items.Power) < power_req:
 		farmer()
 	
@@ -189,6 +197,7 @@ while num_unlocked(Unlocks.Leaderboard) == 0:
 			
 			cost = actual_costs[item]
 			farmer = create_farmer(item, cost)
+			prev_item = item
 			
 			suggester.start_item(item)
 			starting_count = num_items(item)
