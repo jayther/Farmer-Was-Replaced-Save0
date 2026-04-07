@@ -21,6 +21,8 @@ import tree_poly_farmer
 
 step = 0
 
+prev_item = None
+
 item_order = [
 	Items.Hay,
 	Items.Wood,
@@ -40,12 +42,13 @@ def create_farmer(item, item_count):
 	
 	if item == Items.Power:
 		clear()
+		current_power = num_items(Items.Power)
 		if m_drones == 1:
 			quick_print('using smartflower farm')
-			return sunflower_column.create_run_lb(0, size - 1, item_count)
+			return sunflower_column.create_run_lb(0, size - 1, item_count - current_power)
 		else:
 			quick_print('using dumbflower farm (', m_drones, 'drones,', size, 'size)')
-			return dumbflower_section.create_run(0, m_drones - 1, item_count)
+			return dumbflower_section.create_run(0, m_drones - 1, item_count - current_power)
 	elif item == Items.Hay:
 		if m_drones >= 4 and num_unlocked(Unlocks.Polyculture) > 0:
 			clear()
@@ -99,6 +102,7 @@ def create_farmer(item, item_count):
 			maze_size = common.floor(size / max_num_mazes_side)
 			use_multi = True
 		
+	
 		clear()
 		if use_multi:
 			return maze_multi_reuse.create_run(maze_size, item_count)
@@ -115,6 +119,8 @@ def create_farmer(item, item_count):
 
 		
 def maybe_farm_power(actual_costs):
+	global prev_item
+	
 	if num_unlocked(Unlocks.Sunflowers) == 0:
 		return
 		
@@ -143,6 +149,7 @@ def maybe_farm_power(actual_costs):
 			continue
 		cost = sunflower_costs[item]
 		farmer = create_farmer(item, cost)
+		prev_item = item
 		
 		while num_items(item) < cost:
 			farmer()
@@ -151,6 +158,7 @@ def maybe_farm_power(actual_costs):
 			
 	# farm actual sunflowers
 	farmer = create_farmer(Items.Power, power_req)
+	prev_item = Items.Power
 	while num_items(Items.Power) < power_req:
 		farmer()
 	
@@ -189,6 +197,7 @@ while num_unlocked(Unlocks.Leaderboard) == 0:
 			
 			cost = actual_costs[item]
 			farmer = create_farmer(item, cost)
+			prev_item = item
 			
 			suggester.start_item(item)
 			starting_count = num_items(item)

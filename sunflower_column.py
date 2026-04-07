@@ -15,7 +15,7 @@ multi = False
 def need_more_gold():
 	if max_gold == -1:
 		return True
-	return num_items(Items.Gold) - start_gold < max_gold
+	return num_items(Items.Power) - start_gold < max_gold
 
 def plant_sunflower():
 	plant(Entities.Sunflower)
@@ -36,7 +36,7 @@ def setup(col_start, col_end, max_gold_arg = -1, multi_arg = False):
 	global multi
 	
 	max_gold = max_gold_arg
-	start_gold = num_items(Items.Gold)
+	start_gold = num_items(Items.Power)
 	
 	sun_col_start = col_start
 	sun_col_end = col_end

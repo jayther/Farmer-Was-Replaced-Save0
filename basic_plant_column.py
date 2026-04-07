@@ -1,11 +1,11 @@
 import common
-from entity_item_mapping import get_item_from_entity
+from eiu_maps import get_item_from_entity
 
 def plant_tree(x, y):
 	if (x + y) % 2 == 0:
-		plant(Entities.Tree)
+		return plant(Entities.Tree)
 	else:
-		plant(Entities.Bush)
+		return plant(Entities.Bush)
 		
 non_tilled_types = { Entities.Grass, Entities.Bush, Entities.Tree }
 
@@ -15,6 +15,12 @@ def create_basic_plant_lb(plant_type, goal_count, multi = False):
 	tilled = plant_type not in non_tilled_types
 	item_type = get_item_from_entity(plant_type)
 	warn_count = 0
+	item_yield = common.get_bonus(plant_type)
+	plant_count = 0
+	max_plant_count = 0
+	
+	if plant_type == Entities.Tree:
+		item_yield *= 2
 	
 	if item_type == None:
 		quick_print('WARNING:', plant_type, 'does not map to an item type')
@@ -22,17 +28,37 @@ def create_basic_plant_lb(plant_type, goal_count, multi = False):
 	def need_more_items():
 		return num_items(item_type) < goal_count
 	
+	def should_replant():
+		#return True
+		max_yield = item_yield * max_plant_count
+		current_items = num_items(item_type)
+		return current_items <= goal_count - max_yield
+	
+	def add_plant(amount = 1):
+		global plant_count
+		global max_plant_count
+		plant_count += 1
+		if plant_count > max_plant_count:
+			max_plant_count = plant_count
+	
+	def remove_plant(amount = 1):
+		global plant_count
+		plant_count -= amount
+	
 	def plant_plant(x, y):
 		global warned_no_plant
 		global warn_count
 		if tilled and get_ground_type() != Grounds.Soil:
 			till()
 		if plant_type == Entities.Tree:
-			plant_tree(x, y)
+			planted = plant_tree(x, y)
+			if planted:
+				add_plant()
 		elif plant_type != Entities.Grass:
 			planted = plant(plant_type)
-			if not planted and not warned_no_plant:
-				quick_print('NOT PLANTED:', plant_type)
+			if planted:
+				add_plant()
+			elif not warned_no_plant:
 				warned_no_plant = True
 				warn_count += 1
 				if warn_count >= get_world_size():
@@ -42,16 +68,26 @@ def create_basic_plant_lb(plant_type, goal_count, multi = False):
 	
 	def plant_column():
 		global warned_no_plant
+		global plant_count
 		warned_no_plant = False
 		x = get_pos_x()
 		for i in range(get_world_size()):
 			y = get_pos_y()
+			
 			if can_harvest():
-				harvest()
+				entity_type = get_entity_type()
+				if plant_type == Entities.Tree and entity_type == Entities.Bush:
+					entity_type = Entities.Tree
+				harvested = harvest()
+				if harvested and entity_type == plant_type:
+					remove_plant()
+			
 			if not need_more_items():
 				break
-			if get_entity_type() != plant_type:
+			
+			if get_entity_type() != plant_type and should_replant():
 				plant_plant(x, y)
+			
 			if moveable:
 				move(North)
 	

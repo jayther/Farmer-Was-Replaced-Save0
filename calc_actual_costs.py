@@ -1,5 +1,6 @@
 import common
-import entity_item_mapping
+import eiu_maps
+
 
 item_entity_map = {
 	Items.Hay: Entities.Grass,
@@ -9,29 +10,6 @@ item_entity_map = {
 	Items.Cactus: Entities.Cactus,
 	Items.Bone: Entities.Dinosaur,
 	Items.Weird_Substance: None,
-	Items.Gold: Entities.Treasure,
-	Items.Power: None
-}
-
-entity_unlock_map = {
-	Entities.Grass: Unlocks.Grass,
-	Entities.Bush: Unlocks.Trees,
-	Entities.Tree: Unlocks.Trees,
-	Entities.Carrot: Unlocks.Carrots,
-	Entities.Pumpkin: Unlocks.Pumpkins,
-	Entities.Cactus: Unlocks.Cactus,
-	Entities.Treasure: Unlocks.Mazes,
-	Entities.Sunflower: Unlocks.Sunflowers
-}
-
-item_unlock_map = {
-	Items.Hay: Unlocks.Grass,
-	Items.Wood: Unlocks.Trees,
-	Items.Carrot: Unlocks.Carrots,
-	Items.Pumpkin: Unlocks.Pumpkins,
-	Items.Cactus: Unlocks.Cactus,
-	Items.Bone: Unlocks.Dinosaurs,
-	Items.Weird_Substance: Entities.Hedge,
 	Items.Gold: Entities.Treasure,
 	Items.Power: None
 }
@@ -61,7 +39,7 @@ quant_item_order = [
 ]
 
 pumpkin_spoil_rate = 0.3 # 20% with some room for 2nd+ replants
-substance_buffer_mul = 1.1
+substance_buffer_mul = 1.0
 
 
 # same calculations as fastest_lb
@@ -183,7 +161,7 @@ def suggest_power_corrections(costs, items_power_used, items_farmed, items_power
 		if item in items_power_empty and items_power_empty[item]:
 			continue
 		
-		unlock_type = item_unlock_map[item]
+		unlock_type = eiu_maps.get_unlock_type_from_item(item)
 		if unlock_type == None:
 			continue
 		
@@ -211,7 +189,7 @@ def get_maze_substance_cost(maze_size):
 
 def get_area_yield(item, farm_size):
 	area = farm_size ** 2
-	unlock_type = item_unlock_map[item]
+	unlock_type = eiu_maps.get_unlock_type_from_item(item)
 	if unlock_type == None:
 		return area
 	
@@ -305,11 +283,12 @@ def recursive_actual_costs(costs, farm_size, buffer_mul = 1, extra_items = {}):
 				bonus_mul = common.get_bonus(Unlocks.Mazes)
 				maze_size = get_multi_maze_size(farm_size)
 				gold_per_maze = (maze_size ** 2) * bonus_mul
+				mazes_per_plot = get_maze_max_usable_drones()
 				num_mazes = common.ceil(actual_costs[item] / gold_per_maze)
 				subs_per_maze = get_maze_substance_cost(maze_size)
-				preqs[single_item] = common.ceil(num_mazes * subs_per_maze * substance_buffer_mul)
+				preqs[single_item] = common.ceil((num_mazes + mazes_per_plot) * subs_per_maze * substance_buffer_mul)
 			else:
-				preqs[single_item] = single_costs[single_item] * entities_req
+				preqs[single_item] = common.ceil(single_costs[single_item] * entities_req)
 		
 		#quick_print('single costs for', item, ':', single_costs)
 		#quick_print('preqs for', actual_costs[item], item, ':', preqs)
@@ -337,9 +316,9 @@ def recursive_actual_costs(costs, farm_size, buffer_mul = 1, extra_items = {}):
 			
 				
 			if preq_item in actual_costs:
-				actual_costs[preq_item] += quantized_cost * buffer_mul
+				actual_costs[preq_item] += common.ceil(quantized_cost * buffer_mul)
 			else:
-				actual_costs[preq_item] = quantized_cost * buffer_mul
+				actual_costs[preq_item] = common.ceil(quantized_cost * buffer_mul)
 			
 		
 	return actual_costs
