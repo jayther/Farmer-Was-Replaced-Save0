@@ -8,14 +8,14 @@ min_petals = 7
 min_suns = 10
 dedicated_sun_farmer = False
 perma_ignore = None
-max_gold = -1
-start_gold = num_items(Items.Gold)
+max_power = -1
+start_power = num_items(Items.Power)
 multi = False
 
-def need_more_gold():
-	if max_gold == -1:
+def need_more():
+	if max_power == -1:
 		return True
-	return num_items(Items.Gold) - start_gold < max_gold
+	return num_items(Items.Power) - start_power < max_power
 
 def plant_sunflower():
 	plant(Entities.Sunflower)
@@ -36,7 +36,7 @@ def setup(col_start, col_end, max_gold_arg = -1, multi_arg = False):
 	global multi
 	
 	max_gold = max_gold_arg
-	start_gold = num_items(Items.Gold)
+	start_gold = num_items(Items.Power)
 	
 	sun_col_start = col_start
 	sun_col_end = col_end
@@ -96,8 +96,8 @@ def harvest_column(petals, ignore):
 		count = measure()
 		if petals == count:
 			harvest()
-		if not need_more_gold():
-			break
+		#if not need_more_gold():
+		#	break
 		move(North)
 
 def run():
@@ -158,26 +158,28 @@ def run():
 		for drone in drones:
 			wait_for(drone)
 		
-		if not need_more_gold():
+		if not need_more():
 			break
 	
+	if not need_more():
+		return
+	
 	# replant
-	if need_more_gold():
-		drones = []
-		common.go_to_pos(sun_col_start, 0)
-		for col in range(num_cols - 1):
-			if multi:
-				drones.append(spawn_drone(plant_column))
-			else:
-				plant_column()
-			move(East)
-		plant_column()
-		
-		for drone in drones:
-			wait_for(drone)
+	drones = []
+	common.go_to_pos(sun_col_start, 0)
+	for col in range(num_cols - 1):
+		if multi:
+			drones.append(spawn_drone(plant_column))
+		else:
+			plant_column()
+		move(East)
+	plant_column()
+	
+	for drone in drones:
+		wait_for(drone)
 	
 	# remeasure
-	if need_more_gold() and not perma_ignore:
+	if not perma_ignore:
 		common.go_to_pos(sun_col_start, 0)
 		for x in range(num_cols):
 			for y in range(get_world_size()):

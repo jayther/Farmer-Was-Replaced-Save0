@@ -1,5 +1,4 @@
 import common
-import entity_item_mapping
 
 item_entity_map = {
 	Items.Hay: Entities.Grass,

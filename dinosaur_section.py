@@ -232,7 +232,7 @@ def run_circle():
 	common.go_to_pos(path_side_map[South][0], path_side_map[South][1], True, on_move)
 	ignore = False
 	
-	while True:
+	while need_more():
 		path = []
 		found = False
 		cur_side = dirs[dir_index]
@@ -264,6 +264,10 @@ def run_circle():
 		path.append(path_side_map[cur_side])
 		for p in path:
 			common.go_to_pos(p[0], p[1], True, on_move)
+			if not need_more():
+				return False
+			if not can_move_anywhere():
+				return False
 		
 		if snake >= max_snake:
 			ignore = True
@@ -318,7 +322,7 @@ def run_column_squiggle():
 	
 	common.go_to_pos(0, size - 1, True, on_move)
 	
-	while True:
+	while need_more():
 		start_x = squiggle_column_index * 2 + 1
 		start_y = top_row
 		end_x = start_x + 1
@@ -343,6 +347,8 @@ def run_column_squiggle():
 		
 		for p in path:
 			common.go_to_pos(p[0], p[1], True, on_move)
+			if not need_more():
+				return False
 			
 		if not can_move_anywhere():
 			return False
@@ -355,6 +361,8 @@ def run_column_squiggle():
 				break
 			for p in return_trip_path:
 				common.go_to_pos(p[0], p[1], True, on_move)
+				if not need_more():
+					return False
 				
 		if not can_move_anywhere():
 			return False
@@ -368,6 +376,9 @@ def run_column_squiggle():
 			if snake >= max_snake_size - perimeter_threshold:
 				squiggle_row -= 1
 	
+	if not need_more():
+		return False
+	
 	for p in final_path:
 		common.go_to_pos(p[0], p[1], True, on_move)
 		
@@ -376,6 +387,8 @@ def run_column_squiggle():
 def run_squiggle():
 	for (x, y) in squiggle_path:
 		common.go_to_pos(x, y, True, on_move)
+		if not need_more():
+			return False
 		if not can_move_anywhere():
 			return False
 	return True
@@ -389,10 +402,20 @@ algo_length = len(algos)
 
 snake = 1
 next_apple = None
+goal = -1
+
+def need_more():
+	if goal == -1:
+		return True
+	
+	bonus_mul = common.get_bonus(Unlocks.Dinosaurs)
+	bones = snake ** 2 * bonus_mul
+	return num_items(Items.Bone) + bones < goal
 
 
-
-def create_run():
+def create_run(goal_arg = -1):
+	global goal
+	goal = goal_arg
 	def run():
 		global next_apple
 		global snake
@@ -415,7 +438,7 @@ def create_run():
 		snake = 1
 		quick_print('dinosaur precheck, entity_type:', get_entity_type())
 		next_apple = measure()
-		while algo_index < algo_length:
+		while algo_index < algo_length and need_more():
 			repeat = algo()
 			if not repeat:
 				algo_index += 1
@@ -423,6 +446,10 @@ def create_run():
 					algo = algos[algo_index]
 				else:
 					algo = None
+		
+		# if we need one more snake length, we need to move so we can actually get the bones
+		if snake == 1:
+			move(North)
 		
 		# commit bones by changing hats
 		change_hat(Hats.Straw_Hat)

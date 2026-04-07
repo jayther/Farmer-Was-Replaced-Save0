@@ -17,7 +17,7 @@ def create_run(start_col, end_col, multi = False):
 		planted = plant(Entities.Cactus)
 		if not planted:
 			quick_print('CACTUS NOT PLANTED')
-		common.maybe_water()
+		#common.maybe_water()
 		return planted
 	
 	def plant_cactus_column():
@@ -49,7 +49,7 @@ def create_run(start_col, end_col, multi = False):
 					move(East)
 		return success
 	
-	def sort_and_harvest_single():
+	def sort_and_harvest_single_old():
 		common.go_to_pos(start_col, 0)
 		
 		col_size = get_world_size()
@@ -79,6 +79,69 @@ def create_run(start_col, end_col, multi = False):
 						swap(East)
 					move(East)
 				common.go_to_pos(start_col, row)
+			move(North)
+			
+		# all should be sorted, harvest here
+		common.go_to_pos(end_col, get_world_size() - 1)
+		harvest()
+		common.go_to_pos(end_col, 0)
+	
+	def sort_and_harvest_single():
+		common.go_to_pos(start_col, 0)
+		
+		col_size = get_world_size()
+		
+		# bubble up/down each column individually
+		for col in range(start_col, end_col + 1):
+			bubble_up = True
+			for i in range(0, col_size - 1):
+				for j in range(i, col_size - 1):
+					if bubble_up:
+						size_here = measure()
+						size_north = measure(North)
+						if size_here > size_north:
+							swap(North)
+						move(North)
+					else:
+						size_here = measure()
+						size_south = measure(South)
+						if size_here < size_south:
+							swap(South)
+						move(South)
+				if bubble_up:
+					move(South)
+				else:
+					move(North)
+				bubble_up = not bubble_up
+			common.go_to_pos(col, 0)
+			move(East)
+		
+		row_size = end_col - start_col + 1
+		
+		# bubble right/left each row individually
+		common.go_to_pos(start_col, 0)
+		for row in range(0, col_size):
+			bubble_right = True
+			for i in range(row_size - 1):
+				for j in range(i, row_size - 1):
+					if bubble_right:
+						size_here = measure()
+						size_east = measure(East)
+						if size_here > size_east:
+							swap(East)
+						move(East)
+					else:
+						size_here = measure()
+						size_west = measure(West)
+						if size_here < size_west:
+							swap(West)
+						move(West)
+				if bubble_right:
+					move(West)
+				else:
+					move(East)
+				bubble_right = not bubble_right
+			common.go_to_pos(0, row)
 			move(North)
 			
 		# all should be sorted, harvest here

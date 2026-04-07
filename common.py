@@ -154,4 +154,7 @@ def wait_for_drones(drones):
 def wait_for_item(item_type, min_items = 1):
 	while num_items(item_type) < min_items:
 		pass
+
+def get_bonus(unlock_type):
+	return 2 ** (num_unlocked(unlock_type) - 1)
 	

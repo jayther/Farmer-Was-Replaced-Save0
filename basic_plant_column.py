@@ -1,5 +1,5 @@
 import common
-from entity_item_mapping import get_item_from_entity
+from eiu_maps import get_item_from_entity
 
 def plant_tree(x, y):
 	if (x + y) % 2 == 0:
