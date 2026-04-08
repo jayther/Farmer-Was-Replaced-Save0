@@ -57,7 +57,12 @@ def create_run(col_start, col_end, goal = -1):
 		while need_more():
 			normalize_tree()
 			if can_harvest():
-				plant_type, pos = get_companion()
+				companion = None
+				while companion == None:
+					companion = get_companion()
+					if companion == None:
+						normalize_tree()
+				plant_type, pos = companion
 				def create_planter():
 					poly_planter(plant_type, pos)
 				if restore_drone != None:

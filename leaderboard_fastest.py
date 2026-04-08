@@ -4,9 +4,9 @@ import common
 unlocks = {}
 items = {}
 globals = {}
-seed = 1
+seed = -1
 filename = 'fastest_lb'
-speedup = 32
+speedup = 1000
 
 def print_readable(seconds):
 	hours = common.floor(seconds / (60 * 60))
@@ -16,8 +16,22 @@ def print_readable(seconds):
 	quick_print(hours, ':', minutes, ':', rem_seconds)
 
 
-#duration = simulate(filename, unlocks, items, globals, seed, speedup)
-duration = leaderboard_run(Leaderboards.Fastest_Reset, filename, 1000)
+def run_simulation():
+	durs = []
+	for i in range(10):
+		dur = simulate(filename, unlocks, items, globals, seed, speedup)
+		durs.append(dur)
+		quick_print('sim', i, ':', dur, 's')
+		print_readable(dur)
+		
+	sum = 0
+	for dur in durs:
+		sum += dur
+	avg = sum / len(durs)
+	return avg
+	
+duration = run_simulation()
+#duration = leaderboard_run(Leaderboards.Fastest_Reset, filename, 1000)
 
 if duration != None:
 	quick_print('Finished in', duration, 's')

@@ -6,6 +6,9 @@ size = get_world_size()
 dirs = [West, North, East, South]
 min_circle_radius = size / 4
 perimeter_threshold = 3
+last_pos = (-1, -1)
+not_moved_count = 0
+not_moved_threshold = 3
 
 def gen_squiggle():
 	down = True
@@ -34,6 +37,18 @@ def can_move_anywhere():
 		if can_move(dir):
 			return True
 	return False
+
+def has_moved():
+	global last_pos
+	global not_moved_count
+	pos = (get_pos_x(), get_pos_y())
+	moved = last_pos != pos
+	if moved:
+		not_moved_count = 0
+		last_pos = pos
+	else:
+		not_moved_count += 1
+	return not_moved_count < not_moved_threshold
 		
 def on_move(x, y):
 	global next_apple
@@ -266,7 +281,7 @@ def run_circle():
 			common.go_to_pos(p[0], p[1], True, on_move)
 			if not need_more():
 				return False
-			if not can_move_anywhere():
+			if not has_moved():
 				return False
 		
 		if snake >= max_snake:
@@ -422,6 +437,10 @@ def create_run(goal_arg = -1):
 		global size
 		global min_circle_radius
 		global squiggle_path
+		global last_pos
+		global not_moved_count
+		last_pos = (-1, -1)
+		not_moved_count = 0
 		size = get_world_size()
 		og_size = size
 		if (size % 4) != 0:
