@@ -1,7 +1,7 @@
 import common
 
 
-def create_run(max_cacti = -1):
+def create_run(max_cacti = -1, presort = False):
 	
 	size = get_world_size()
 	start_cacti = num_items(Items.Cactus)
@@ -26,9 +26,27 @@ def create_run(max_cacti = -1):
 		plant(Entities.Cactus)
 	
 	def plant_cactus_column():
-		for _ in range(get_world_size()):
+		x = get_pos_x()
+		for og_y in range(get_world_size()):
 			plant_cactus()
-			move(North)
+			if presort and og_y > 0:
+				y = get_pos_y()
+				swapped = True
+				while swapped and y > 0:
+					size_here = measure()
+					size_south = measure(South)
+					if size_south > size_here:
+						swap(South)
+						move(South)
+						swapped = True
+						y = get_pos_y()
+					else:
+						# not swapped, so it's already sorted
+						swapped = False
+				# go to the next plot
+				common.go_to_pos(x, og_y + 1)
+			else:
+				move(North)
 			
 	def setup():
 		drones = []
@@ -137,7 +155,8 @@ def create_run(max_cacti = -1):
 		harvest()
 	
 	def sort_and_harvest():
-		sort_columns()
+		if not presort:
+			sort_columns()
 		sort_rows()
 		final_harvest()
 	
@@ -150,5 +169,5 @@ def create_run(max_cacti = -1):
 
 if __name__ == '__main__':
 	clear()
-	runner = create_run()
+	runner = create_run(-1, True)
 	runner()

@@ -119,9 +119,9 @@ def create_farmer(item, item_count):
 		else:
 			clear()
 		if m_drones >= size:
-			return cactus_brick_lb.create_run(item_count - num_items(Items.Cactus))
+			return cactus_brick_lb.create_run(item_count - num_items(Items.Cactus), size <= 12)
 		else:
-			return cactus_section.create_run(0, size - 1)
+			return cactus_section.create_run(0, size - 1, False, True)
 	elif item == Items.Gold:
 		# calculate maze size based on max drones
 		if m_drones == 1:

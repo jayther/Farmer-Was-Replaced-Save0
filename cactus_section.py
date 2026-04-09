@@ -1,14 +1,12 @@
 import common
 import sunflower_column
 
-first_run = True
-
 def use_hat():
 	pass
 	#if num_unlocked(Hats.Cactus_Hat) > 0:
 	#	change_hat(Hats.Cactus_Hat)
 
-def create_run(start_col, end_col, multi = False):
+def create_run(start_col, end_col, multi = False, presort = False):
 	
 	def plant_cactus():
 		if get_ground_type() != Grounds.Soil:
@@ -22,11 +20,30 @@ def create_run(start_col, end_col, multi = False):
 	
 	def plant_cactus_column():
 		use_hat()
-		for _ in range(get_world_size()):
+		x = get_pos_x()
+		size = get_world_size()
+		for og_y in range(size):
 			planted = plant_cactus()
 			if not planted:
 				return False
-			move(North)
+			if presort and og_y > 0:
+				y = get_pos_y()
+				swapped = True
+				while swapped and y > 0:
+					size_here = measure()
+					size_south = measure(South)
+					if size_south > size_here:
+						swap(South)
+						move(South)
+						swapped = True
+						y = get_pos_y()
+					else:
+						# not swapped, so it's already sorted
+						swapped = False
+				# go to the next plot
+				common.go_to_pos(x, og_y + 1)
+			else:	
+				move(North)
 		return True
 	
 	def setup():
@@ -91,30 +108,32 @@ def create_run(start_col, end_col, multi = False):
 		
 		col_size = get_world_size()
 		
-		# bubble up/down each column individually
-		for col in range(start_col, end_col + 1):
-			bubble_up = True
-			for i in range(0, col_size - 1):
-				for j in range(i, col_size - 1):
+		# if presorted, columns are already sorted
+		if not presort:
+			# bubble up/down each column individually
+			for col in range(start_col, end_col + 1):
+				bubble_up = True
+				for i in range(0, col_size - 1):
+					for j in range(i, col_size - 1):
+						if bubble_up:
+							size_here = measure()
+							size_north = measure(North)
+							if size_here > size_north:
+								swap(North)
+							move(North)
+						else:
+							size_here = measure()
+							size_south = measure(South)
+							if size_here < size_south:
+								swap(South)
+							move(South)
 					if bubble_up:
-						size_here = measure()
-						size_north = measure(North)
-						if size_here > size_north:
-							swap(North)
-						move(North)
-					else:
-						size_here = measure()
-						size_south = measure(South)
-						if size_here < size_south:
-							swap(South)
 						move(South)
-				if bubble_up:
-					move(South)
-				else:
-					move(North)
-				bubble_up = not bubble_up
-			common.go_to_pos(col, 0)
-			move(East)
+					else:
+						move(North)
+					bubble_up = not bubble_up
+				common.go_to_pos(col, 0)
+				move(East)
 		
 		row_size = end_col - start_col + 1
 		
@@ -182,21 +201,23 @@ def create_run(start_col, end_col, multi = False):
 	def sort_and_harvest_multi():
 		common.go_to_pos(start_col, 0)
 		
-		col_drones = []
+		# if presorted, columns are already sorted
+		if not presort:
+			col_drones = []
 		
-		# bubble up each column individually
-		for col in range(start_col, end_col):
-			col_drones.append(spawn_drone(sort_column))
-			move(East)
+			# bubble up each column individually
+			for col in range(start_col, end_col):
+				col_drones.append(spawn_drone(sort_column))
+				move(East)
+				
+			# main drone
+			sort_column()
 			
-		# main drone
-		sort_column()
+			for drone in col_drones:
+				wait_for(drone)
 		
-		for drone in col_drones:
-			wait_for(drone)
-		
-		row_size = end_col - start_col + 1
 		row_drones = []
+		row_size = end_col - start_col + 1
 		col_size = get_world_size()
 		
 		# bubble right each row section
@@ -210,7 +231,7 @@ def create_run(start_col, end_col, multi = False):
 		
 		# subtracting section_row by section_size enables us to
 		# add remainder rows to some drones
-		for row in range(0, col_size - section_size):
+		for row in range(0, col_size - section_size + 1):
 			if section_row < 1:
 				row_start = row
 				# if we have one usable drone left, let the main drone take the rest
@@ -220,6 +241,7 @@ def create_run(start_col, end_col, multi = False):
 			section_row += 1
 			if section_row >= section_size:
 				row_end = row
+				quick_print('rows', row_start, row_end)
 				def create_sort_row():
 					sort_row(row_start, row_end)
 				row_drones.append(spawn_drone(create_sort_row))
@@ -229,6 +251,7 @@ def create_run(start_col, end_col, multi = False):
 		
 		# main drone, take the remaining rows
 		row_end = col_size - 1
+		quick_print('rows', row_start, row_end)
 		sort_row(row_start, row_end)
 		
 		for drone in row_drones:
@@ -259,5 +282,6 @@ def create_run(start_col, end_col, multi = False):
 if __name__ == '__main__':
 	clear()
 	set_world_size(10)
-	runner = create_run(0, 9, False)
+	runner = create_run(0, 9, True, True)
 	runner()
+	common.wait(3)

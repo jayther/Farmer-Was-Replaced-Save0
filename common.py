@@ -16,6 +16,9 @@ def go_to_pos(x, y, stay_within = False, cb = do_nothing):
 	cur_x = get_pos_x()
 	cur_y = get_pos_y()
 	
+	if x == cur_x and y == cur_y:
+		return
+	
 	dx = x - cur_x
 	if not stay_within:
 		# if delta is more than half the world size
