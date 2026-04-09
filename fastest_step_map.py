@@ -28,7 +28,6 @@ step_map = [
 	( Unlocks.Pumpkins , {Items.Carrot:1000} ),
 	( Unlocks.Trees , {Items.Hay:1200} ),
 	( Unlocks.Carrots , {Items.Wood:1250} ),
-	( Unlocks.Cactus , {Items.Pumpkin:5000} ), # first cactus
 	( Unlocks.Grass , {Items.Wood:2500} ),
 	( Unlocks.Watering , {Items.Wood:3200} ),
 	( Unlocks.Pumpkins , {Items.Carrot:4000} ),
@@ -39,8 +38,9 @@ step_map = [
 	( Unlocks.Watering , {Items.Wood:12800} ),
 	( Unlocks.Pumpkins , {Items.Carrot:16000} ),
 	( Unlocks.Trees , {Items.Hay:19200} ),
-	( Unlocks.Cactus , {Items.Pumpkin:20000} ),
 	( Unlocks.Carrots , {Items.Wood:31200} ),
+	( Unlocks.Cactus , {Items.Pumpkin:5000} ), # first cactus
+	( Unlocks.Cactus , {Items.Pumpkin:20000} ),
 	( Unlocks.Mazes , {Items.Weird_Substance:1000} ), # first mazes
 	( Unlocks.Mazes , {Items.Cactus:12000} ),
 	( Unlocks.Mazes , {Items.Cactus:72000} ),

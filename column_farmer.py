@@ -6,7 +6,6 @@ def do_nothing_column():
 	pass
 
 def create_farmer_lb(config, goal_type, goal_count):
-	moveable = get_world_size() > 1
 	def run():		
 		clear()
 
@@ -19,8 +18,7 @@ def create_farmer_lb(config, goal_type, goal_count):
 				current_runner = config[x]	
 			current_runner()
 			
-			if moveable:
-				move(East)
+			move(East)
 	return run
 
 def create_farmer(config, sun_collect_first = False, sun_cols = (0,0)):

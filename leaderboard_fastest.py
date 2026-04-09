@@ -30,8 +30,8 @@ def run_simulation():
 	avg = sum / len(durs)
 	return avg
 	
-duration = run_simulation()
-#duration = leaderboard_run(Leaderboards.Fastest_Reset, filename, 1000)
+#duration = run_simulation()
+duration = leaderboard_run(Leaderboards.Fastest_Reset, filename, 1000)
 
 if duration != None:
 	quick_print('Finished in', duration, 's')

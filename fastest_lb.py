@@ -18,6 +18,7 @@ import suggester
 import hay_poly_farmer
 import carrot_poly_farmer
 import tree_poly_farmer
+import eiu_maps
 
 step = 0
 prev_item = None
@@ -34,12 +35,39 @@ item_order = [
 	Items.Fertilizer
 ]
 
+def create_1x1_farmer(item_count):
+	def run():
+		while num_items(Items.Hay) < item_count:
+			if can_harvest():
+				harvest()
+	return run
+
+def create_1x3_farmer(entity_type, item_count):
+	item_type = eiu_maps.get_item_from_entity(entity_type)
+	def run():
+		while num_items(item_type) < item_count:
+			if can_harvest():
+				harvest()
+				if entity_type != Entities.Grass and get_entity_type() != entity_type:
+					plant(entity_type)
+			move(North)
+	
+	return run
+
 def create_farmer(item, item_count):
 	size = get_world_size()
 	m_drones = max_drones()
 	multi = m_drones > 1
+	expand_level = num_unlocked(Unlocks.Expand)
 	
-	if item == Items.Power:
+	if expand_level == 0:
+		return create_1x1_farmer(item_count)
+	elif expand_level == 1:
+		if item == Items.Hay:
+			return create_1x3_farmer(Entities.Grass, item_count)
+		else:
+			return create_1x3_farmer(Entities.Bush, item_count)
+	elif item == Items.Power:
 		clear()
 		if m_drones == 1:
 			quick_print('using smartflower farm')

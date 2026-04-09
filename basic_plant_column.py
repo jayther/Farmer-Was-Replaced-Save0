@@ -10,7 +10,6 @@ def plant_tree(x, y):
 non_tilled_types = { Entities.Grass, Entities.Bush, Entities.Tree }
 
 def create_basic_plant_lb(plant_type, goal_count, multi = False):
-	moveable = get_world_size() > 1
 	warned_no_plant = False
 	tilled = plant_type not in non_tilled_types
 	item_type = get_item_from_entity(plant_type)
@@ -52,8 +51,7 @@ def create_basic_plant_lb(plant_type, goal_count, multi = False):
 				break
 			if get_entity_type() != plant_type:
 				plant_plant(x, y)
-			if moveable:
-				move(North)
+			move(North)
 	
 	def plant_column_forever():
 		# change_hat(common.get_hat_from_entity(plant_type))
