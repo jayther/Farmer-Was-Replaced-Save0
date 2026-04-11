@@ -17,16 +17,16 @@ step_map = [
 	( Unlocks.Watering , {Items.Wood:200} ),
 	( Unlocks.Carrots , {Items.Wood:250} ),
 	( Unlocks.Grass , {Items.Wood:500} ),
+	( Unlocks.Trees , {Items.Hay:1200} ),
+	( Unlocks.Speed , {Items.Carrot:500} ),
+	( Unlocks.Speed , {Items.Carrot:1000} ),
 	( Unlocks.Fertilizer , {Items.Wood:500} ), # first fertilizer
 	( Unlocks.Fertilizer , {Items.Wood:1500} ),
 	( Unlocks.Fertilizer , {Items.Wood:9000} ),
-	( Unlocks.Speed , {Items.Carrot:500} ),
 	( Unlocks.Watering , {Items.Wood:800} ),
-	( Unlocks.Speed , {Items.Carrot:1000} ),
 	( Unlocks.Pumpkins , {Items.Wood:500,Items.Carrot:200} ), # first pumpkins
 	( Unlocks.Pumpkins , {Items.Carrot:1000} ),
 	( Unlocks.Expand , {Items.Pumpkin:1000} ), # 8x8
-	( Unlocks.Trees , {Items.Hay:1200} ),
 	( Unlocks.Carrots , {Items.Wood:1250} ),
 	( Unlocks.Grass , {Items.Wood:2500} ),
 	( Unlocks.Watering , {Items.Wood:3200} ),
