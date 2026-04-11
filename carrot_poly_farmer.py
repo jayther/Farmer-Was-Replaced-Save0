@@ -1,6 +1,12 @@
 import common
 import timer
 
+def safe_spawn_drone(fn):
+	drone = None
+	while drone == None:
+		drone = spawn_drone(fn)
+	return drone
+
 def create_run(col_start, col_end, goal = -1):
 	start_pos = (col_start, 0)
 	
@@ -15,19 +21,24 @@ def create_run(col_start, col_end, goal = -1):
 		if get_entity_type() == plant_type:
 			return
 		
-		if plant_type == Entities.Carrot:
-			if get_ground_type() == Grounds.Grassland:
-				till()
-		elif get_ground_type() == Grounds.Soil:
+		ground_type = get_ground_type()
+		
+		if plant_type == Entities.Carrot and ground_type == Grounds.Grassland:
+			till()
+		elif plant_type == Entities.Grass and ground_type == Grounds.Soil:
 			till()
 		
-		plant(plant_type)
+		if plant_type != Entities.Grass:
+			plant(plant_type)
+		else:
+			harvest()
 	
 	def normalize_carrot():
 		while get_ground_type() == Grounds.Grassland:
 			till()
 		if get_entity_type() != Entities.Carrot:
 			plant(Entities.Carrot)
+			common.maybe_water()
 	
 	def harvester():
 		common.go_to_pos(start_pos[0], start_pos[1])
@@ -38,24 +49,20 @@ def create_run(col_start, col_end, goal = -1):
 			move(North)
 		
 		# harvest
-		restore_drone = None
 		while need_more():
 			normalize_carrot()
 			if can_harvest():
 				plant_type, pos = get_companion()
 				def create_planter():
 					poly_planter(plant_type, pos)
-				if restore_drone != None:
-					wait_for(restore_drone)
-				drone = spawn_drone(create_planter)
+				drone = safe_spawn_drone(create_planter)
 				wait_for(drone)
 				harvest()
 				if (pos[0] % 2) == 0:
 					def restore_planter():
 						poly_planter(Entities.Carrot, pos)
-					restore_drone = spawn_drone(restore_planter)
-				else:
-					restore_drone = None
+						common.maybe_water()
+					safe_spawn_drone(restore_planter)
 			
 			normalize_carrot()
 			move(North)

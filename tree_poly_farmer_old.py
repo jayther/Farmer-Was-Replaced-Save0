@@ -8,35 +8,27 @@ def create_run(col_start, col_end, goal = -1):
 		if goal == -1:
 			return True
 		return num_items(Items.Wood) < goal
-	
-	def get_plant_type_for_pos(x, y):
-		return Entities.Tree
-		if (x + y) % 2 == 0:
-			return Entities.Tree
-		else:
-			return Entities.Bush
 			
 	def poly_planter(plant_type, pos):
 		common.go_to_pos(pos[0], pos[1])
 		
-		if start_pos == (0,0):
-			quick_print('poly_planter', plant_type, pos)
-		
-		current_entity_type = get_entity_type()
-		if current_entity_type == plant_type:
+		if get_entity_type() == plant_type:
 			return
 		
-		ground_type = get_ground_type()
-		
-		if plant_type == Entities.Grass and ground_type != Grounds.Grassland:
+		if plant_type == Entities.Carrot:
+			if get_ground_type() == Grounds.Grassland:
+				till()
+		elif get_ground_type() == Grounds.Soil:
 			till()
-		elif plant_type == Entities.Carrot and ground_type != Grounds.Soil:
-			till()
 		
-		if current_entity_type == Entities.Carrot:
-			harvest()
 		plant(plant_type)
-		#common.maybe_water()
+		common.maybe_water()
+	
+	def normalize_carrot():
+		while get_ground_type() == Grounds.Grassland:
+			till()
+		if get_entity_type() != Entities.Carrot:
+			plant(Entities.Carrot)
 	
 	def normalize_tree():
 		#x = get_pos_x()
@@ -44,14 +36,15 @@ def create_run(col_start, col_end, goal = -1):
 		entity_type = get_entity_type()
 		if entity_type != Entities.Tree:
 			plant(Entities.Tree)
-			common.maybe_water(1.0)
-		#plant_type = get_plant_type_for_pos(x, y)
-		#if entity_type != plant_type:
-		#	plant(plant_type)
-		#	common.maybe_water(1.0)
+			common.maybe_water()
+		#if entity_type != Entities.Tree or entity_type != Entities.Bush:
+		#	if (x + y) % 2 == 0:
+		#		plant(Entities.Tree)
+		#
+		#	else:
+		#		plant(Entities.Bush)
 	
 	def harvester():
-		size = get_world_size()
 		common.go_to_pos(start_pos[0], start_pos[1])
 		
 		# setup
