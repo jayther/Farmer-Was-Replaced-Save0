@@ -9,6 +9,7 @@ step_map = [
 	( Unlocks.Expand , {Items.Wood:30,Items.Carrot:20} ), # 4x4
 	( Unlocks.Speed , {Items.Wood:50,Items.Carrot:50} ),
 	( Unlocks.Trees , {Items.Wood:50,Items.Carrot:70} ), # first trees
+	( Unlocks.Trees , {Items.Hay:300} ),
 	( Unlocks.Sunflowers , {Items.Carrot:500} ), # first (and only) sunflowers
 	( Unlocks.Expand , {Items.Wood:100,Items.Carrot:50} ), # 6x6
 	( Unlocks.Grass , {Items.Hay:300} ),
@@ -19,7 +20,6 @@ step_map = [
 	( Unlocks.Fertilizer , {Items.Wood:500} ), # first fertilizer
 	( Unlocks.Fertilizer , {Items.Wood:1500} ),
 	( Unlocks.Fertilizer , {Items.Wood:9000} ),
-	( Unlocks.Trees , {Items.Hay:300} ),
 	( Unlocks.Speed , {Items.Carrot:500} ),
 	( Unlocks.Watering , {Items.Wood:800} ),
 	( Unlocks.Speed , {Items.Carrot:1000} ),
